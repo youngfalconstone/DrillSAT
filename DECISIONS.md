@@ -115,3 +115,7 @@ Every significant choice made while building the app, with the reason.
     lists the same NTFS folder twice. Treat case-variant paths as one before any delete decision.
 28. **Old release handling**: v1.0.0 keeps its tag and notes (marked superseded) but its installer assets are
     deleted, so the only downloads are the current ones.
+29. **CSP allows `'unsafe-eval'` for scripts** (1.1.1). The Desmos v1.11 bundle evaluates code from strings and
+    silently stops without it. The renderer remains sandboxed (contextIsolation, no nodeIntegration, IPC
+    allow-list), scripts can still only come from the app itself and desmos.com, so the added exposure is
+    limited to what desmos.com serves.

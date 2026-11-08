@@ -3,6 +3,16 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] - 2026-11-08
+
+### Fixed
+- **Desmos calculator never finished loading.** The Desmos API bundle evaluates code from a string, which the
+  app's Content Security Policy blocked (`'unsafe-eval'`), so `Desmos.GraphingCalculator` was never defined
+  and the panel showed "GraphingCalculator is not a function". The CSP now allows eval for scripts (the
+  renderer stays sandboxed with context isolation and no Node access). Verified live with a real key:
+  the calculator renders, expressions persist per question, and the AI tutor answers.
+- Clearer message when a Desmos key does not enable the graphing calculator.
+
 ## [1.1.0] - 2026-11-08
 
 ### Fixed

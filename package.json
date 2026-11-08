@@ -1,6 +1,6 @@
 {
   "name": "drillsat",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Desktop SAT practice app with the official question bank, AI tutor and a built-in Desmos calculator",
   "main": "dist-electron/main.js",
   "private": true,

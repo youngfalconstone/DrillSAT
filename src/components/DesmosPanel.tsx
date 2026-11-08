@@ -119,6 +119,11 @@ export default function DesmosPanel({ questionId, onClose }: Props) {
       try {
         const D = await loadDesmos(key);
         if (disposed || !hostRef.current) return;
+        if (typeof D.GraphingCalculator !== 'function') {
+          const feats = (D as unknown as { enabledFeatures?: Record<string, boolean> }).enabledFeatures ?? {};
+          const on = Object.entries(feats).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none';
+          throw new Error(`This Desmos API key does not enable the graphing calculator (enabled products: ${on}). Request a key with the Graphing Calculator enabled at desmos.com/my-api.`);
+        }
         const calc = D.GraphingCalculator(hostRef.current, {
           keypad: true, expressions: true, settingsMenu: true, zoomButtons: true, expressionsTopbar: true, border: false,
           lockViewport: false, showResetButtonOnGraphpaper: true,
