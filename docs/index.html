@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAT Practice – official question bank, AI tutor and Desmos on your desktop</title>
+<meta name="description" content="SAT Practice is a free Windows app with all 3,770 official SAT questions, answer keys and explanations, adaptive practice sessions, progress tracking, an AI tutor (bring your own key) and the Desmos graphing calculator. Works offline. Runs under Wine.">
+<link rel="icon" href="img/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<style>
+  :root{
+    --bg:#f3f4f6;--panel:#ffffff;--fg:#111827;--muted:#6b7280;--line:#e5e7eb;
+    --accent:#1d6fd8;--accent-fg:#ffffff;--navy:#1b2537;--good:#15803d;--shadow:0 10px 30px rgba(16,24,40,.10);
+  }
+  @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--panel:#1e293b;--fg:#f1f5f9;--muted:#94a3b8;--line:#334155;--accent:#3b82f6;--accent-fg:#ffffff;--navy:#0b1220;--good:#86efac;--shadow:0 10px 30px rgba(0,0,0,.45)}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Roboto,"Segoe UI",system-ui,-apple-system,sans-serif}
+  a{color:var(--accent)}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header{padding:18px 0;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;text-decoration:none;color:var(--fg)}
+  .brand img{width:30px;height:30px;border-radius:7px}
+  nav a{margin-left:18px;text-decoration:none;color:var(--muted);font-weight:500}
+  nav a:hover{color:var(--fg)}
+  .hero{padding:56px 0 36px;text-align:center}
+  .hero h1{font-size:clamp(32px,6vw,54px);line-height:1.1;margin:0 0 14px;letter-spacing:-.02em}
+  .hero p.lead{font-size:clamp(17px,2.4vw,21px);color:var(--muted);max-width:760px;margin:0 auto 30px}
+  .cta{display:inline-flex;align-items:center;gap:12px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;font-size:19px;padding:16px 30px;border-radius:999px;box-shadow:var(--shadow);transition:transform .08s ease,filter .15s}
+  .cta:hover{filter:brightness(1.06);transform:translateY(-1px)}
+  .cta svg{width:24px;height:24px;flex:none}
+  .cta small{display:block;font-weight:500;font-size:13px;opacity:.9}
+  .alt{margin-top:14px;color:var(--muted);font-size:14px}
+  .alt a{margin:0 6px}
+  .req{margin-top:22px;color:var(--muted);font-size:14px}
+  .shot{margin:40px auto 0;max-width:960px;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--panel)}
+  .shot img{display:block;width:100%;height:auto}
+  section{padding:48px 0}
+  h2{font-size:28px;margin:0 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{margin:0 0 6px;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:15px}
+  .card .ic{width:34px;height:34px;border-radius:9px;background:color-mix(in srgb,var(--accent) 16%,transparent);display:grid;place-items:center;margin-bottom:12px;font-size:18px}
+  .steps{counter-reset:s;display:grid;gap:14px}
+  .step{display:grid;grid-template-columns:40px 1fr;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .step::before{counter-increment:s;content:counter(s);width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-fg);font-weight:700;display:grid;place-items:center}
+  .step p{margin:4px 0 0;color:var(--muted);font-size:15px}
+  code,kbd{background:color-mix(in srgb,var(--fg) 8%,transparent);padding:2px 6px;border-radius:6px;font-size:.92em}
+  .note{border-left:4px solid var(--accent);background:var(--panel);border-radius:0 12px 12px 0;padding:14px 18px;color:var(--muted);font-size:15px;margin-top:22px}
+  .shots2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:26px}
+  .shots2 figure{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
+  .shots2 img{display:block;width:100%;height:auto}
+  .shots2 figcaption{padding:10px 14px;color:var(--muted);font-size:14px}
+  footer{padding:36px 0 50px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);margin-top:20px}
+  footer a{color:var(--muted)}
+  .pill{display:inline-block;background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#"><img src="img/logo.png" alt="" width="64" height="64">SAT Practice</a>
+    <nav><a href="#features">Features</a><a href="#setup">Setup</a><a href="#wine">Linux / Wine</a><a href="https://github.com/youngfalconstone/SAT-Practice">GitHub</a></nav>
+  </header>
+
+  <section class="hero">
+    <span class="pill">Free · Open source · Windows 10 / 11 · runs under Wine</span>
+    <h1>The whole SAT question bank, on your desktop.</h1>
+    <p class="lead">All 3,770 official questions with answer keys and explanations, practice sessions that adapt to you, progress tracking, an AI tutor that uses your own API key, and the same Desmos graphing calculator as the digital SAT. Everything except AI and the calculator works offline.</p>
+    <a id="download" class="cta" href="https://github.com/youngfalconstone/SAT-Practice/releases/latest">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>
+      <span>Download for Windows<small id="download-sub">Latest release · installer (x64)</small></span>
+    </a>
+    <div class="alt" id="alt-links"><a href="https://github.com/youngfalconstone/SAT-Practice/releases/latest">Portable .exe</a>·<a href="https://github.com/youngfalconstone/SAT-Practice/releases">All releases</a></div>
+    <p class="req">Standalone app, nothing else to install. No account, no telemetry, no data leaves your computer except requests to the AI provider and Desmos you configure.</p>
+    <div class="shot">
+      <img src="img/screenshot-practice.png" alt="SAT Practice: a Reading and Writing question in practice mode with the timer, answer choices, feedback and the official explanation">
+    </div>
+  </section>
+
+  <section id="features">
+    <h2>Built like the real thing</h2>
+    <p class="sub">The layout follows College Board's own question bank, so nothing feels different on test day.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">📚</div><h3>Official question bank</h3><p>1,925 Math and 1,845 Reading &amp; Writing questions, filterable by domain, skill, difficulty and format, searchable by keyword or ID. Math renders as real notation, figures and tables included.</p></div>
+      <div class="card"><div class="ic">⏱️</div><h3>Practice mode</h3><p>One question at a time with per-question and session timers, mark for review, multiple-choice and grid-in answers checked with the official rules, instant feedback with the official explanation.</p></div>
+      <div class="card"><div class="ic">📈</div><h3>Adaptive difficulty</h3><p>Each topic moves up after a run of correct answers and down after misses. Override any topic by hand, or pick a fixed or mixed difficulty for a session.</p></div>
+      <div class="card"><div class="ic">🧮</div><h3>Desmos calculator</h3><p>The embedded Desmos graphing calculator in a resizable, collapsible panel on every Math question. Its state is kept per question. Bring a free Desmos API key.</p></div>
+      <div class="card"><div class="ic">🤖</div><h3>AI tutor, solver and review</h3><p>A tutor panel that knows the question you are on and will not spoil the answer, step-by-step solutions on request, and a session review with weak topics and a recommended next session. Anthropic or any OpenAI-compatible API, your key, stored encrypted.</p></div>
+      <div class="card"><div class="ic">✨</div><h3>New questions on demand</h3><p>Generate fresh questions in the style of any topic and difficulty, validated for a single correct answer and a proper explanation, and clearly labelled as AI-generated.</p></div>
+      <div class="card"><div class="ic">🔥</div><h3>Progress and streaks</h3><p>Accuracy by topic, domain and difficulty, time per question, session history and day streaks, all stored locally.</p></div>
+      <div class="card"><div class="ic">⌨️</div><h3>Keyboard first</h3><p>A–D or 1–4 to answer, Enter to check and advance, arrows to move, M to mark, G for the calculator, T for the tutor.</p></div>
+      <div class="card"><div class="ic">🐧</div><h3>Windows and Wine</h3><p>Plain Electron with no WebView2 or native modules, so the same build runs on Linux through Wine. Light and dark themes.</p></div>
+    </div>
+    <div class="shots2">
+      <figure><img src="img/screenshot-home.png" alt="Home screen with quick session buttons, stats and weakest topics"><figcaption>Home: quick sessions, stats, weakest topics</figcaption></figure>
+      <figure><img src="img/screenshot-question.png" alt="A grid-in Math question with rendered equations and the official explanation"><figcaption>Question bank: real math notation and official explanations</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="setup">
+    <h2>Up and running in three steps</h2>
+    <p class="sub">The question bank is included; keys are optional.</p>
+    <div class="steps">
+      <div class="step"><div><strong>Download and run.</strong><p>Use the installer, or the portable .exe if you prefer not to install anything. No runtime to install separately.</p></div></div>
+      <div class="step"><div><strong>Optional: add an AI key.</strong><p>Settings → AI: choose Anthropic (Claude) or an OpenAI-compatible endpoint, paste your key, click <em>Test connection</em>. The key is encrypted with Windows secure storage and only ever sent to the provider you picked.</p></div></div>
+      <div class="step"><div><strong>Optional: add a Desmos key.</strong><p>Request a free key at <a href="https://www.desmos.com/my-api">desmos.com/my-api</a> and paste it in Settings → Calculator. The calculator loads from desmos.com, so it needs a connection.</p></div></div>
+    </div>
+    <div class="note"><strong>Privacy.</strong> There is no account and no telemetry. Progress, settings and generated questions stay in your user folder. The only network traffic is to the AI provider and to Desmos, and only when you use those features.</div>
+  </section>
+
+  <section id="wine">
+    <h2>Linux via Wine</h2>
+    <p class="sub">Use the portable .exe.</p>
+    <pre class="card" style="overflow:auto"><code>wine SAT-Practice-1.0.0-portable.exe
+# blank window? add the flags the app would set itself when it detects Wine:
+wine SAT-Practice-1.0.0-portable.exe --disable-gpu --no-sandbox</code></pre>
+    <p class="sub" style="margin-top:14px">Details and known workarounds are in the <a href="https://github.com/youngfalconstone/SAT-Practice#running-under-wine-linux">README</a>.</p>
+  </section>
+
+  <footer>
+    <div>SAT Practice is open source (MIT). SAT® is a trademark of College Board, which is not affiliated with and does not endorse this project. Desmos is a product of Desmos Studio.</div>
+    <div style="margin-top:6px"><a href="https://github.com/youngfalconstone/SAT-Practice">Source on GitHub</a> · <a href="https://github.com/youngfalconstone/SAT-Practice/issues">Report a problem</a></div>
+  </footer>
+</div>
+<script>
+// Resolve the latest release assets so the button points straight at the installer.
+(async () => {
+  const repo = "youngfalconstone/SAT-Practice";
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { Accept: "application/vnd.github+json" } });
+    if (!r.ok) return;
+    const rel = await r.json();
+    const find = re => (rel.assets || []).find(a => re.test(a.name));
+    const setup = find(/setup\.exe$/i), portable = find(/portable\.exe$/i);
+    if (setup) {
+      document.getElementById("download").href = setup.browser_download_url;
+      document.getElementById("download-sub").textContent = `${rel.tag_name} · installer (x64) · ${(setup.size / 1048576).toFixed(0)} MB`;
+    }
+    const alt = [];
+    if (portable) alt.push(`<a href="${portable.browser_download_url}">Portable .exe (${(portable.size / 1048576).toFixed(0)} MB)</a>`);
+    alt.push(`<a href="https://github.com/${repo}/releases">All releases</a>`);
+    document.getElementById("alt-links").innerHTML = alt.join("·");
+  } catch { /* keep the static links */ }
+})();
+</script>
+</body>
+</html>

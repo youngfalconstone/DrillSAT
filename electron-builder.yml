@@ -1,0 +1,29 @@
+appId: com.satpractice.app
+productName: SAT Practice
+directories:
+  output: release
+files:
+  - dist/**
+  - dist-electron/**
+  - package.json
+  - "!node_modules/**"   # main/preload/renderer are fully bundled by Vite; no runtime node_modules needed
+extraResources:
+  - from: data/bank
+    to: bank
+    filter: ["**/*"]
+asar: true
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  artifactName: "SAT-Practice-${version}-setup.${ext}"
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  perMachine: false
+portable:
+  artifactName: "SAT-Practice-${version}-portable.exe"
