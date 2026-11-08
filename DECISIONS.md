@@ -92,6 +92,6 @@ Every significant choice made while building the app, with the reason.
 22. **No commits were made** on the user's behalf; the folder is `git init`-ed with a `.gitignore` that
     excludes `node_modules`, build output and the raw API cache (`data/raw`, 44 MB, reproducible).
 23. **The packaged build was verified, not just the dev build**: the Playwright suite runs against
-    `release/win-unpacked/SAT Practice.exe` (`SAT_E2E_EXE`), which exercises the asar + `resources/bank`
+    `release/win-unpacked/DrillSAT.exe` (`SAT_E2E_EXE`), which exercises the asar + `resources/bank`
     paths. `node_modules` is excluded from the package because Vite bundles everything (asar 2 MB; the
     installer is ~137 MB and the portable exe ~122 MB, almost all Electron/Chromium + the 46 MB bank).

@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useStore, type Screen } from './store';
 import ChatPanel from './components/ChatPanel';
-import { BankIcon, ChatIcon, ChevronDown, HelpIcon, HomeIcon, Logo, PerfIcon, PracticeIcon, SettingsIcon, ToolsIcon } from './components/icons';
+import { BankIcon, ChatIcon, ChevronDown, HelpIcon, HomeIcon, PerfIcon, PracticeIcon, SettingsIcon, ToolsIcon } from './components/icons';
+import logo from './assets/logo.png';
 import Home from './screens/Home';
 import QuestionBank from './screens/QuestionBank';
 import Practice from './screens/Practice';
@@ -18,7 +19,7 @@ const NAV: { id: Screen; label: string; icon: React.FC<React.SVGProps<SVGSVGElem
   { id: 'study', label: 'Study Tools', icon: ToolsIcon },
 ];
 const TITLES: Record<Screen, [string, string]> = {
-  home: ['SAT Practice', 'Practice with official SAT questions, build your skills, and track your progress.'],
+  home: ['DrillSAT', 'Practice with official SAT questions, build your skills, and track your progress.'],
   bank: ['SAT Question Bank', 'Browse and filter all 3,770 official questions, plus your AI-generated ones.'],
   practice: ['Practice', 'Answer questions one at a time with a timer, feedback, and the graphing calculator.'],
   performance: ['Performance', 'Accuracy by topic and difficulty, streaks, and session history.'],
@@ -57,7 +58,7 @@ export default function App() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand"><Logo /> SAT Practice</div>
+        <div className="brand"><img src={logo} alt="" width={30} height={30} style={{ borderRadius: 7 }} /> Drill<span style={{ color: '#5aa9ff' }}>SAT</span></div>
         <div className="program">SAT <ChevronDown style={{ width: 22 }} /></div>
         <nav className="nav">
           {NAV.map((n) => (

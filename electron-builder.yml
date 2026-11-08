@@ -1,5 +1,5 @@
-appId: com.satpractice.app
-productName: SAT Practice
+appId: com.drillsat.app
+productName: DrillSAT
 directories:
   output: release
 files:
@@ -18,7 +18,7 @@ win:
       arch: [x64]
     - target: portable
       arch: [x64]
-  artifactName: "SAT-Practice-${version}-setup.${ext}"
+  artifactName: "DrillSAT-${version}-setup.${ext}"
   icon: build/icon.ico
 nsis:
   oneClick: false
@@ -26,4 +26,4 @@ nsis:
   createDesktopShortcut: true
   perMachine: false
 portable:
-  artifactName: "SAT-Practice-${version}-portable.exe"
+  artifactName: "DrillSAT-${version}-portable.exe"

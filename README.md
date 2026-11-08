@@ -1,6 +1,8 @@
-# SAT Practice
+<p align="center"><img src="docs/img/wordmark.png" alt="DrillSAT" width="420"></p>
 
-**Download:** <https://youngfalconstone.github.io/SAT-Practice/> · [Releases](https://github.com/youngfalconstone/SAT-Practice/releases)
+# DrillSAT
+
+**Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Releases](https://github.com/youngfalconstone/DrillSAT/releases)
 
 A desktop SAT practice app built with Electron. It ships the complete College Board SAT question
 bank (1,925 Math + 1,845 Reading & Writing questions with answer keys and official explanations),
@@ -23,15 +25,15 @@ Everything except the AI features and the calculator works offline.
 
 ## Quick start (Windows)
 
-1. Grab a build from the [download page](https://youngfalconstone.github.io/SAT-Practice/) or [Releases](https://github.com/youngfalconstone/SAT-Practice/releases):
-   - `SAT-Practice-1.0.0-setup.exe` — installer (NSIS). Installs per-user, no admin rights needed.
-   - `SAT-Practice-1.0.0-portable.exe` — single portable executable, nothing to install.
+1. Grab a build from the [download page](https://youngfalconstone.github.io/DrillSAT/) or [Releases](https://github.com/youngfalconstone/DrillSAT/releases):
+   - `DrillSAT-1.0.0-setup.exe` — installer (NSIS). Installs per-user, no admin rights needed.
+   - `DrillSAT-1.0.0-portable.exe` — single portable executable, nothing to install.
    No separate runtime is required; Electron bundles its own Chromium and Node.
 2. Launch it. The question bank is included and loads immediately.
 3. Open **Settings** to add your API keys (next section). Without keys you can still browse, practice,
    see official explanations and track progress — only the AI features and the calculator are disabled.
 
-Data (settings, progress, generated questions) lives in `%APPDATA%\sat-practice\`.
+Data (settings, progress, generated questions) lives in `%APPDATA%\drillsat\`.
 
 ## Adding API keys
 
@@ -59,7 +61,7 @@ runs best. Use the **portable** exe.
 # Wine 8+ recommended (tested configuration target: wine-9.x, 64-bit prefix)
 export WINEPREFIX=~/.wine-sat   # optional: dedicated prefix
 winecfg                          # once; pick Windows 10
-wine SAT-Practice-1.0.0-portable.exe
+wine DrillSAT-1.0.0-portable.exe
 ```
 
 Notes and known workarounds:
@@ -67,14 +69,14 @@ Notes and known workarounds:
 - The app detects Wine (via `WINEPREFIX`/`WINELOADER` or `winemenubuilder.exe` in `system32`) and
   automatically disables GPU acceleration and the Chromium sandbox, which are the two things that
   commonly break Electron under Wine. You can force these flags on any platform:
-  `wine SAT-Practice-1.0.0-portable.exe --disable-gpu --no-sandbox`.
+  `wine DrillSAT-1.0.0-portable.exe --disable-gpu --no-sandbox`.
 - If the window opens but stays blank, also try `--disable-gpu-compositing --in-process-gpu`.
 - Secure key storage: under Wine, DPAPI is usually available; if `safeStorage` reports it is not, the
   app stores keys base64-obfuscated and says so in Settings → About ("Secure key storage: Unavailable").
 - Desmos works the same way as on Windows (it is just a web page inside Chromium); it needs network
   access from the Wine prefix.
 - The installer (NSIS) also runs under Wine, but the portable exe avoids installer quirks entirely.
-- Data folder under Wine: `~/.wine/drive_c/users/<you>/AppData/Roaming/sat-practice/`.
+- Data folder under Wine: `~/.wine/drive_c/users/<you>/AppData/Roaming/drillsat/`.
 
 This build was produced and tested on Windows 11; see `DECISIONS.md` #8 for the Wine testing status.
 
@@ -157,7 +159,7 @@ npm test                                             # unit: bank loading (all 3
 npm run build && npx playwright test -c tests/e2e/playwright.config.ts
 # e2e: launches the built app, browses the bank, runs a practice session, checks settings/secure
 # storage and the AI/Desmos error paths. Set DESMOS_API_KEY=<valid key> to also exercise the live
-# calculator (needs internet). Set SAT_E2E_EXE="release/win-unpacked/SAT Practice.exe" to run the
+# calculator (needs internet). Set SAT_E2E_EXE="release/win-unpacked/DrillSAT.exe" to run the
 # same suite against the packaged build (done for the 1.0.0 release).
 ```
 

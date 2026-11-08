@@ -119,7 +119,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 640,
     backgroundColor: '#f3f4f6',
-    title: 'SAT Practice',
+    title: 'DrillSAT',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

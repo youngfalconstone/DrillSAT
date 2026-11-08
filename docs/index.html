@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SAT Practice – official question bank, AI tutor and Desmos on your desktop</title>
-<meta name="description" content="SAT Practice is a free Windows app with all 3,770 official SAT questions, answer keys and explanations, adaptive practice sessions, progress tracking, an AI tutor (bring your own key) and the Desmos graphing calculator. Works offline. Runs under Wine.">
+<title>DrillSAT – official question bank, AI tutor and Desmos on your desktop</title>
+<meta name="description" content="DrillSAT is a free Windows app with all 3,770 official SAT questions, answer keys and explanations, adaptive practice sessions, progress tracking, an AI tutor (bring your own key) and the Desmos graphing calculator. Works offline. Runs under Wine.">
 <link rel="icon" href="img/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <style>
@@ -19,7 +19,8 @@
   .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
   header{padding:18px 0;display:flex;align-items:center;justify-content:space-between;gap:16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;text-decoration:none;color:var(--fg)}
-  .brand img{width:30px;height:30px;border-radius:7px}
+  .brand img.wordmark{width:auto;height:44px;border-radius:0}
+  @media (prefers-color-scheme:dark){.brand img.wordmark{background:#fff;border-radius:10px;padding:4px 10px;height:48px}}
   nav a{margin-left:18px;text-decoration:none;color:var(--muted);font-weight:500}
   nav a:hover{color:var(--fg)}
   .hero{padding:56px 0 36px;text-align:center}
@@ -60,22 +61,22 @@
 <body>
 <div class="wrap">
   <header>
-    <a class="brand" href="#"><img src="img/logo.png" alt="" width="64" height="64">SAT Practice</a>
-    <nav><a href="#features">Features</a><a href="#setup">Setup</a><a href="#wine">Linux / Wine</a><a href="https://github.com/youngfalconstone/SAT-Practice">GitHub</a></nav>
+    <a class="brand" href="#"><img class="wordmark" src="img/wordmark.png" alt="DrillSAT" width="848" height="196"></a>
+    <nav><a href="#features">Features</a><a href="#setup">Setup</a><a href="#wine">Linux / Wine</a><a href="https://github.com/youngfalconstone/DrillSAT">GitHub</a></nav>
   </header>
 
   <section class="hero">
     <span class="pill">Free · Open source · Windows 10 / 11 · runs under Wine</span>
     <h1>The whole SAT question bank, on your desktop.</h1>
     <p class="lead">All 3,770 official questions with answer keys and explanations, practice sessions that adapt to you, progress tracking, an AI tutor that uses your own API key, and the same Desmos graphing calculator as the digital SAT. Everything except AI and the calculator works offline.</p>
-    <a id="download" class="cta" href="https://github.com/youngfalconstone/SAT-Practice/releases/latest">
+    <a id="download" class="cta" href="https://github.com/youngfalconstone/DrillSAT/releases/latest">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>
       <span>Download for Windows<small id="download-sub">Latest release · installer (x64)</small></span>
     </a>
-    <div class="alt" id="alt-links"><a href="https://github.com/youngfalconstone/SAT-Practice/releases/latest">Portable .exe</a>·<a href="https://github.com/youngfalconstone/SAT-Practice/releases">All releases</a></div>
+    <div class="alt" id="alt-links"><a href="https://github.com/youngfalconstone/DrillSAT/releases/latest">Portable .exe</a>·<a href="https://github.com/youngfalconstone/DrillSAT/releases">All releases</a></div>
     <p class="req">Standalone app, nothing else to install. No account, no telemetry, no data leaves your computer except requests to the AI provider and Desmos you configure.</p>
     <div class="shot">
-      <img src="img/screenshot-practice.png" alt="SAT Practice: a Reading and Writing question in practice mode with the timer, answer choices, feedback and the official explanation">
+      <img src="img/screenshot-practice.png" alt="DrillSAT: a Reading and Writing question in practice mode with the timer, answer choices, feedback and the official explanation">
     </div>
   </section>
 
@@ -113,21 +114,21 @@
   <section id="wine">
     <h2>Linux via Wine</h2>
     <p class="sub">Use the portable .exe.</p>
-    <pre class="card" style="overflow:auto"><code>wine SAT-Practice-1.0.0-portable.exe
+    <pre class="card" style="overflow:auto"><code>wine DrillSAT-1.0.0-portable.exe
 # blank window? add the flags the app would set itself when it detects Wine:
-wine SAT-Practice-1.0.0-portable.exe --disable-gpu --no-sandbox</code></pre>
-    <p class="sub" style="margin-top:14px">Details and known workarounds are in the <a href="https://github.com/youngfalconstone/SAT-Practice#running-under-wine-linux">README</a>.</p>
+wine DrillSAT-1.0.0-portable.exe --disable-gpu --no-sandbox</code></pre>
+    <p class="sub" style="margin-top:14px">Details and known workarounds are in the <a href="https://github.com/youngfalconstone/DrillSAT#running-under-wine-linux">README</a>.</p>
   </section>
 
   <footer>
-    <div>SAT Practice is open source (MIT). SAT® is a trademark of College Board, which is not affiliated with and does not endorse this project. Desmos is a product of Desmos Studio.</div>
-    <div style="margin-top:6px"><a href="https://github.com/youngfalconstone/SAT-Practice">Source on GitHub</a> · <a href="https://github.com/youngfalconstone/SAT-Practice/issues">Report a problem</a></div>
+    <div>DrillSAT is open source (MIT). SAT® is a trademark of College Board, which is not affiliated with and does not endorse this project. Desmos is a product of Desmos Studio.</div>
+    <div style="margin-top:6px"><a href="https://github.com/youngfalconstone/DrillSAT">Source on GitHub</a> · <a href="https://github.com/youngfalconstone/DrillSAT/issues">Report a problem</a></div>
   </footer>
 </div>
 <script>
 // Resolve the latest release assets so the button points straight at the installer.
 (async () => {
-  const repo = "youngfalconstone/SAT-Practice";
+  const repo = "youngfalconstone/DrillSAT";
   try {
     const r = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { Accept: "application/vnd.github+json" } });
     if (!r.ok) return;

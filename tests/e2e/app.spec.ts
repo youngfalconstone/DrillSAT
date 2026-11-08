@@ -13,12 +13,12 @@ import path from 'node:path';
 
 let app: ElectronApplication;
 let page: Page;
-const userData = fs.mkdtempSync(path.join(os.tmpdir(), 'satpractice-e2e-'));
+const userData = fs.mkdtempSync(path.join(os.tmpdir(), 'drillsat-e2e-'));
 const shots = path.resolve(__dirname, 'screenshots');
 fs.mkdirSync(shots, { recursive: true });
 
 test.beforeAll(async () => {
-  // SAT_E2E_EXE=release/win-unpacked/SAT Practice.exe runs the same suite against the packaged build.
+  // SAT_E2E_EXE=release/win-unpacked/DrillSAT.exe runs the same suite against the packaged build.
   const exe = process.env.SAT_E2E_EXE;
   app = await electron.launch({
     ...(exe ? { executablePath: exe, args: [] } : { args: [path.resolve(__dirname, '..', '..')] }),

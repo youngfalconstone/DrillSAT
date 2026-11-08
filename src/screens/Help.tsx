@@ -19,7 +19,7 @@ export default function Help() {
         <p><strong>Practice.</strong> Choose a section, topics and difficulty. In adaptive mode the difficulty of each topic moves up after a run of correct answers and down after misses. Check each answer to see the official explanation; ask the AI tutor for hints or a step-by-step solution.</p>
         <p><strong>AI features</strong> (question generation, solver, session review, tutor) need an LLM API key and an internet connection. Enter the key in Settings. AI-generated questions are always labelled.</p>
         <p><strong>Calculator.</strong> The embedded Desmos graphing calculator is the same one used on the digital SAT. It needs a Desmos API key (free for non-commercial use) and a connection. Its state is kept per question while the app runs.</p>
-        <p><strong>Wine.</strong> The Windows build runs under Wine on Linux. If the window stays blank, start it with <code>wine "SAT Practice.exe" --disable-gpu --no-sandbox</code>. See README.md for details.</p>
+        <p><strong>Wine.</strong> The Windows build runs under Wine on Linux. If the window stays blank, start it with <code>wine DrillSAT-1.0.0-portable.exe --disable-gpu --no-sandbox</code>. See README.md for details.</p>
       </div>
     </div>
   );
