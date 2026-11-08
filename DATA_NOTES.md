@@ -62,7 +62,7 @@ A. ... B. ... C. ... D. ...
 | `id` | string | 8-hex College Board id |
 | `section` | `"math"` \| `"rw"` | |
 | `domain` | string | one of 8 domains |
-| `skill` | string | one of 30 skills (`Cross-text Connections` kept as a separate spelling, 2 items) |
+| `skill` | string | one of 30 skills (`Cross-text Connections` is a second spelling on 2 items; the app merges it into `Cross-Text Connections` at load) |
 | `difficulty` | `"E"` \| `"M"` \| `"H"` | |
 | `type` | `"mcq"` \| `"spr"` | spr = student-produced response (grid-in), math only |
 | `hasFigure`, `hasTable` | boolean | from the HTML (`<svg>`/`<img>`, `<table>`) |

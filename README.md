@@ -2,7 +2,7 @@
 
 # DrillSAT
 
-**Current version: 1.3.0** · **Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest) · [Changelog](CHANGELOG.md)
+**Current version: 1.4.0** · **Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest) · [Changelog](CHANGELOG.md)
 
 <p align="center"><img src="docs/img/tour.gif" alt="DrillSAT tour: question bank, a math question with the official explanation, a practice session and the AI tutor" width="800"></p>
 
@@ -28,10 +28,10 @@ Everything except the AI features and the calculator works offline.
 ## Quick start (Windows)
 
 1. Grab a build from the [download page](https://youngfalconstone.github.io/DrillSAT/) or the [latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest):
-   - `DrillSAT-1.3.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
+   - `DrillSAT-1.4.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
      no admin rights needed, adds a Start Menu shortcut (and a desktop shortcut when you run the
      installer interactively; the silent `/S` install skips it).
-   - `DrillSAT-1.3.0-portable.exe` — single portable executable, nothing to install.
+   - `DrillSAT-1.4.0-portable.exe` — single portable executable, nothing to install.
    The binaries are not code-signed, so SmartScreen shows "Windows protected your PC" on first launch:
    click *More info* → *Run anyway*.
    No separate runtime is required; Electron bundles its own Chromium and Node.
@@ -76,7 +76,7 @@ runs best. Use the **portable** exe.
 # Wine 8+ recommended (tested configuration target: wine-9.x, 64-bit prefix)
 export WINEPREFIX=~/.wine-sat   # optional: dedicated prefix
 winecfg                          # once; pick Windows 10
-wine DrillSAT-1.3.0-portable.exe
+wine DrillSAT-1.4.0-portable.exe
 ```
 
 Notes and known workarounds:
@@ -84,7 +84,7 @@ Notes and known workarounds:
 - The app detects Wine (via `WINEPREFIX`/`WINELOADER` or `winemenubuilder.exe` in `system32`) and
   automatically disables GPU acceleration and the Chromium sandbox, which are the two things that
   commonly break Electron under Wine. You can force these flags on any platform:
-  `wine DrillSAT-1.3.0-portable.exe --disable-gpu --no-sandbox`.
+  `wine DrillSAT-1.4.0-portable.exe --disable-gpu --no-sandbox`.
 - If the window opens but stays blank, also try `--disable-gpu-compositing --in-process-gpu`.
 - Secure key storage: under Wine, DPAPI is usually available; if `safeStorage` reports it is not, the
   app stores keys base64-obfuscated and says so in Settings → About ("Secure key storage: Unavailable").
@@ -97,7 +97,7 @@ This build was produced and tested on Windows 11; see `DECISIONS.md` #8 for the 
 
 ## Features
 
-- **Question bank**: filter by section, domain, skill, difficulty, format (MCQ / grid-in), source
+- **Question bank**: filter by section, topic (grouped by domain; ticking a domain selects all its topics), difficulty, format (MCQ / grid-in), source
   (official / AI); keyword or ID search; opens any question with official explanation.
 - **Practice mode**: one question at a time, per-question and per-session timers (can be switched
   off), mark for review, MCQ and student-produced (grid-in) answers checked with the SAT grid-in

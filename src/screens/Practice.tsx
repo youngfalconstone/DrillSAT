@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, type SessionConfig } from '../store';
 import type { Difficulty, Question, Section, SessionRecord } from '@shared/types';
-import { DIFFICULTY_LABEL, DOMAINS, SECTION_LABEL } from '@shared/types';
+import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
+import { topicsByDomain } from '@shared/topics';
+import { TopicPicker } from '../components/TopicPicker';
 import { skillStats } from '@shared/adaptive';
 import { reviewSession } from '@shared/ai';
 import { complete, AIRequestError } from '../api';
@@ -27,24 +29,18 @@ export default function Practice() {
 function Setup() {
   const { index, aiQuestions, startSession, settings, progress } = useStore();
   const [section, setSection] = useState<Section>('math');
-  const [mode, setMode] = useState<'include' | 'exclude'>('include');
   const [picked, setPicked] = useState<string[]>([]);
   const [diff, setDiff] = useState<Difficulty | 'adaptive' | 'mixed'>(settings.adaptiveEnabled ? 'adaptive' : 'mixed');
   const [count, setCount] = useState(10);
   const [includeAI, setIncludeAI] = useState(true);
   const [onlyUnseen, setOnlyUnseen] = useState(true);
 
-  const skillsByDomain = useMemo(() => {
-    const m = new Map<string, Set<string>>();
-    for (const e of index) if (e.section === section) (m.get(e.domain) ?? m.set(e.domain, new Set()).get(e.domain)!).add(e.skill);
-    return DOMAINS[section].map((d) => [d, [...(m.get(d) ?? [])].sort()] as const);
-  }, [index, section]);
-  const allSkills = skillsByDomain.flatMap(([, s]) => s);
-  const effective = mode === 'include' ? picked : allSkills.filter((s) => !picked.includes(s));
+  const groups = useMemo(() => topicsByDomain(index, section), [index, section]);
+  const effective = picked;
   const available = index.filter((e) => e.section === section && (!effective.length || effective.includes(e.skill))).length + (includeAI ? aiQuestions.filter((q) => q.section === section).length : 0);
 
   const go = () => {
-    const cfg: SessionConfig = { section, skills: mode === 'include' ? picked : effective, difficultyMode: diff, count, includeAI, onlyUnseen };
+    const cfg: SessionConfig = { section, skills: picked, difficultyMode: diff, count, includeAI, onlyUnseen };
     void startSession(cfg);
   };
 
@@ -78,26 +74,12 @@ function Setup() {
         )}
       </div>
       <div className="card">
-        <h2>Topics</h2>
-        <div className="row mb">
-          <label className="check"><input type="radio" checked={mode === 'include'} onChange={() => setMode('include')} /> Only these</label>
-          <label className="check"><input type="radio" checked={mode === 'exclude'} onChange={() => setMode('exclude')} /> Everything except these</label>
-          <button className="btn sm" onClick={() => setPicked([])}>Clear</button>
+        <div className="card-head">
+          <h2>Topics</h2>
+          {picked.length > 0 ? <button className="btn sm" onClick={() => setPicked([])}>Clear ({picked.length})</button> : <span className="muted small">All topics</span>}
         </div>
-        <div className="muted small mb">{picked.length === 0 ? (mode === 'include' ? 'No topics selected = all topics.' : 'Nothing excluded.') : `${picked.length} selected`}</div>
-        {skillsByDomain.map(([d, skills]) => (
-          <div key={d}>
-            <h3>{d}</h3>
-            <div className="checks" style={{ maxHeight: 'none' }}>
-              {skills.map((s) => (
-                <label key={s} className="check">
-                  <input type="checkbox" checked={picked.includes(s)} onChange={() => setPicked(picked.includes(s) ? picked.filter((x) => x !== s) : [...picked, s])} />
-                  {s}{diff === 'adaptive' && progress.levels[s] && <span className={'badge ' + progress.levels[s]} style={{ marginLeft: 6 }}>{progress.levels[s]}</span>}
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
+        <TopicPicker groups={groups} value={picked} onChange={setPicked}
+          badge={(s) => diff === 'adaptive' && progress.levels[s] ? <span className={'badge ' + progress.levels[s]}>{progress.levels[s]}</span> : null} />
       </div>
     </div>
   );

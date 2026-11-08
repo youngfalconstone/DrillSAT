@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { filterQuestions } from '@shared/search';
 import type { Difficulty, Question, QuestionIndexEntry, Section } from '@shared/types';
-import { DIFFICULTY_LABEL, DOMAINS } from '@shared/types';
+import { DIFFICULTY_LABEL } from '@shared/types';
+import { topicLabel, topicsByDomain } from '@shared/topics';
+import { TopicPicker } from '../components/TopicPicker';
 import QuestionView from '../components/QuestionView';
 import { ChevronLeft, SearchIcon } from '../components/icons';
 import { useRestoreScroll } from '../pageScroll';
@@ -12,7 +14,6 @@ const PAGE = 60;
 export default function QuestionBank() {
   const { allIndex, index, aiQuestions, getQuestion, startSession, progress, toggleReviewFlag } = useStore();
   const [section, setSection] = useState<Section | 'all'>('all');
-  const [domains, setDomains] = useState<string[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [diffs, setDiffs] = useState<Difficulty[]>([]);
   const [types, setTypes] = useState<('mcq' | 'spr')[]>([]);
@@ -26,19 +27,14 @@ export default function QuestionBank() {
   useRestoreScroll(open === null); // list keeps its position across open/back; detail starts at top
 
   const all = useMemo(() => allIndex(), [index, aiQuestions]); // eslint-disable-line react-hooks/exhaustive-deps
-  const skillOptions = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const e of all) if ((section === 'all' || e.section === section) && (!domains.length || domains.includes(e.domain))) m.set(e.skill, e.domain);
-    return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1]) || a[0].localeCompare(b[0]));
-  }, [all, section, domains]);
+  const groups = useMemo(() => topicsByDomain(all, section), [all, section]);
   const results = useMemo(
-    () => filterQuestions(all, { section, domains, skills, difficulties: diffs, types, sources, query }),
-    [all, section, domains, skills, diffs, types, sources, query],
+    () => filterQuestions(all, { section, skills, difficulties: diffs, types, sources, query }),
+    [all, section, skills, diffs, types, sources, query],
   );
-  useEffect(() => setLimit(PAGE), [section, domains, skills, diffs, types, sources, query]);
+  useEffect(() => setLimit(PAGE), [section, skills, diffs, types, sources, query]);
 
   const toggle = <T,>(arr: T[], v: T, set: (x: T[]) => void) => set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-  const domainList = section === 'all' ? [...DOMAINS.math, ...DOMAINS.rw] : DOMAINS[section];
 
   const openQ = async (e: QuestionIndexEntry) => {
     setLoading(true);
@@ -78,30 +74,27 @@ export default function QuestionBank() {
       <div className="card filters">
         <label className="field">
           <span>Search</span>
-          <span className="row" style={{ gap: 6 }}><SearchIcon style={{ width: 18, color: 'var(--muted)' }} /><input className="input" placeholder="keyword or question ID" value={query} onChange={(e) => setQuery(e.target.value)} /></span>
+          <span className="search"><SearchIcon /><input className="input" placeholder="keyword or question ID" value={query} onChange={(e) => setQuery(e.target.value)} /></span>
         </label>
         <label className="field mt">
           <span>Section</span>
-          <select className="select" value={section} onChange={(e) => { setSection(e.target.value as Section | 'all'); setDomains([]); setSkills([]); }}>
+          <select className="select" value={section} onChange={(e) => { setSection(e.target.value as Section | 'all'); setSkills([]); }}>
             <option value="all">All sections</option><option value="math">Math</option><option value="rw">Reading and Writing</option>
           </select>
         </label>
-        <div className="field mt"><span>Domain</span>
-          <div className="checks">{domainList.map((d) => <label key={d} className="check"><input type="checkbox" checked={domains.includes(d)} onChange={() => { toggle(domains, d, setDomains); setSkills([]); }} />{d}</label>)}</div>
-        </div>
-        <div className="field mt"><span>Skill (subtopic)</span>
-          <div className="checks">{skillOptions.map(([s]) => <label key={s} className="check"><input type="checkbox" checked={skills.includes(s)} onChange={() => toggle(skills, s, setSkills)} />{s}</label>)}</div>
+        <div className="field mt"><span>Topics</span>
+          <div className="checks"><TopicPicker groups={groups} value={skills} onChange={setSkills} /></div>
         </div>
         <div className="field mt"><span>Difficulty</span>
-          <div className="row">{(['E', 'M', 'H'] as Difficulty[]).map((d) => <label key={d} className="check"><input type="checkbox" checked={diffs.includes(d)} onChange={() => toggle(diffs, d, setDiffs)} />{DIFFICULTY_LABEL[d]}</label>)}</div>
+          <div className="checks">{(['E', 'M', 'H'] as Difficulty[]).map((d) => <label key={d} className="check"><input type="checkbox" checked={diffs.includes(d)} onChange={() => toggle(diffs, d, setDiffs)} />{DIFFICULTY_LABEL[d]}</label>)}</div>
         </div>
         <div className="field mt"><span>Format</span>
-          <div className="row"><label className="check"><input type="checkbox" checked={types.includes('mcq')} onChange={() => toggle(types, 'mcq', setTypes)} />Multiple choice</label><label className="check"><input type="checkbox" checked={types.includes('spr')} onChange={() => toggle(types, 'spr', setTypes)} />Grid-in</label></div>
+          <div className="checks"><label className="check"><input type="checkbox" checked={types.includes('mcq')} onChange={() => toggle(types, 'mcq', setTypes)} />Multiple choice</label><label className="check"><input type="checkbox" checked={types.includes('spr')} onChange={() => toggle(types, 'spr', setTypes)} />Grid-in</label></div>
         </div>
         <div className="field mt"><span>Source</span>
-          <div className="row"><label className="check"><input type="checkbox" checked={sources.includes('official')} onChange={() => toggle(sources, 'official', setSources)} />Official</label><label className="check"><input type="checkbox" checked={sources.includes('ai')} onChange={() => toggle(sources, 'ai', setSources)} />AI-generated</label></div>
+          <div className="checks"><label className="check"><input type="checkbox" checked={sources.includes('official')} onChange={() => toggle(sources, 'official', setSources)} />Official</label><label className="check"><input type="checkbox" checked={sources.includes('ai')} onChange={() => toggle(sources, 'ai', setSources)} />AI-generated</label></div>
         </div>
-        <button className="btn sm mt" onClick={() => { setDomains([]); setSkills([]); setDiffs([]); setTypes([]); setSources([]); setQuery(''); setSection('all'); }}>Clear filters</button>
+        <button className="btn sm mt" onClick={() => { setSkills([]); setDiffs([]); setTypes([]); setSources([]); setQuery(''); setSection('all'); }}>Clear filters</button>
       </div>
 
       <div>
@@ -124,7 +117,7 @@ export default function QuestionBank() {
                     <div className="meta">
                       <span className={'badge ' + e.difficulty}>{DIFFICULTY_LABEL[e.difficulty]}</span>
                       {e.source === 'ai' && <span className="badge ai">AI</span>}
-                      <span>{e.section === 'math' ? 'Math' : 'R&W'} · {e.domain} · {e.skill}</span>
+                      <span>{e.section === 'math' ? 'Math' : 'R&W'} · {topicLabel(e.skill)}</span>
                       <span>{e.type === 'spr' ? 'Grid-in' : 'MCQ'}</span>
                       {e.hasFigure && <span>figure</span>}{e.hasTable && <span>table</span>}
                       {seen && <span className="pill gray" style={{ padding: '1px 8px', fontSize: 11 }}>seen</span>}

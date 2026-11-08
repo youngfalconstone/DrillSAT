@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../store';
 import { generateQuestion, type GenerateSpec } from '@shared/ai';
 import type { Difficulty, Question, Section } from '@shared/types';
-import { DIFFICULTY_LABEL, DOMAINS, SECTION_LABEL } from '@shared/types';
+import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
+import { topicLabel, topicsByDomain } from '@shared/topics';
+import { TopicSelect } from '../components/TopicPicker';
 import { filterQuestions, shuffle } from '@shared/search';
 import { complete, AIRequestError } from '../api';
 import QuestionView from '../components/QuestionView';
@@ -22,13 +24,10 @@ export default function StudyTools() {
   const [answer, setAnswer] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  const skills = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const e of index) if (e.section === section) m.set(e.skill, e.domain);
-    return [...m.entries()].sort((a, b) => DOMAINS[section].indexOf(a[1]) - DOMAINS[section].indexOf(b[1]) || a[0].localeCompare(b[0]));
-  }, [index, section]);
-  const effSkill = skill && skills.some(([s]) => s === skill) ? skill : skills[0]?.[0] ?? '';
-  const domain = skills.find(([s]) => s === effSkill)?.[1] ?? '';
+  const groups = useMemo(() => topicsByDomain(index, section), [index, section]);
+  const allSkills = groups.flatMap((g) => g.skills);
+  const effSkill = skill && allSkills.includes(skill) ? skill : allSkills[0] ?? '';
+  const domain = groups.find((g) => g.skills.includes(effSkill))?.domain ?? '';
 
   const generate = async () => {
     setBusy(true);
@@ -80,10 +79,10 @@ export default function StudyTools() {
     <div className="grid2">
       <div className="card">
         <h2><SparkIcon style={{ width: 18, verticalAlign: '-3px' }} /> Generate new questions</h2>
-        <p className="muted small">The AI writes an original item modeled on official questions of the same topic, difficulty and format. It is kept only if it follows the digital SAT format, a second AI pass solves it to the same answer, and that pass rates it at the chosen College Board difficulty against official items. Generated questions are tagged <span className="badge ai">AI</span> everywhere.</p>
+        <p className="muted small">New SAT-style questions, checked against official ones for format, answer and difficulty. Tagged <span className="badge ai">AI</span>.</p>
         {!settings.hasLlmKey && <div className="info">Add an LLM API key in <button className="btn sm" onClick={() => nav('settings')}>Settings</button> to generate questions.</div>}
         <label className="field mt"><span>Section</span><select className="select" value={section} onChange={(e) => { setSection(e.target.value as Section); setSkill(''); }}><option value="math">Math</option><option value="rw">Reading and Writing</option></select></label>
-        <label className="field mt"><span>Topic</span><select className="select" value={effSkill} onChange={(e) => setSkill(e.target.value)}>{skills.map(([s, d]) => <option key={s} value={s}>{d} — {s}</option>)}</select></label>
+        <label className="field mt"><span>Topic</span><TopicSelect groups={groups} value={effSkill} onChange={setSkill} /></label>
         <div className="grid2 mt">
           <label className="field"><span>Difficulty</span><select className="select" value={diff} onChange={(e) => setDiff(e.target.value as Difficulty)}><option value="E">Easy</option><option value="M">Medium</option><option value="H">Hard</option></select></label>
           <label className="field"><span>Format</span><select className="select" value={section === 'math' ? type : 'mcq'} disabled={section !== 'math'} onChange={(e) => setType(e.target.value as 'mcq' | 'spr')}><option value="mcq">Multiple choice</option><option value="spr">Grid-in</option></select></label>
@@ -102,7 +101,7 @@ export default function StudyTools() {
             {[...aiQuestions].reverse().map((q) => (
               <button key={q.id} className="qitem" onClick={() => { setOpen(q); setAnswer(null); setSubmitted(false); }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="meta"><span className="badge ai">AI</span><span className={'badge ' + q.difficulty}>{DIFFICULTY_LABEL[q.difficulty]}</span><span>{SECTION_LABEL[q.section]} · {q.skill} · {q.type === 'spr' ? 'Grid-in' : 'MCQ'}</span><span>{new Date(q.createdAt ?? 0).toLocaleDateString()}</span></div>
+                  <div className="meta"><span className="badge ai">AI</span><span className={'badge ' + q.difficulty}>{DIFFICULTY_LABEL[q.difficulty]}</span><span>{SECTION_LABEL[q.section]} · {topicLabel(q.skill)} · {q.type === 'spr' ? 'Grid-in' : 'MCQ'}</span><span>{new Date(q.createdAt ?? 0).toLocaleDateString()}</span></div>
                   <div className="prev">{q.text?.split('\n')[0]}</div>
                 </div>
               </button>

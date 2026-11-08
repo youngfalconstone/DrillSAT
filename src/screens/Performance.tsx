@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../store';
 import { liveStreak, skillStats } from '@shared/adaptive';
 import type { Difficulty } from '@shared/types';
+import { topicLabel } from '@shared/topics';
 import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
 import { FlameIcon } from '../components/icons';
 
@@ -65,7 +66,7 @@ export default function Performance() {
             const level = progress.levels[e.skill];
             return (
               <tr key={e.skill}>
-                <td>{e.skill}<div className="muted small">{SECTION_LABEL[e.section]} · {e.domain}</div></td>
+                <td title={e.skill}>{topicLabel(e.skill)}<div className="muted small">{SECTION_LABEL[e.section]} · {e.domain}</div></td>
                 <td>{st ? <div className="row"><div className="bar"><div style={{ width: `${Math.round(st.accuracy * 100)}%` }} /></div>{Math.round(st.accuracy * 100)}% <span className="muted small">({st.correct}/{st.attempts})</span></div> : <span className="muted">—</span>}</td>
                 <td className="small">{st ? (['E', 'M', 'H'] as Difficulty[]).map((d) => `${st.byDifficulty[d].correct}/${st.byDifficulty[d].attempts}`).join(' · ') : '—'}</td>
                 <td>{st ? Math.round(st.avgTimeMs / 1000) + 's' : '—'}</td>

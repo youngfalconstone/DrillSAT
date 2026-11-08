@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@shared/types';
+import { topicLabel } from '@shared/topics';
 import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
 import { checkAnswer, correctAnswerLabel, parseSpr } from '@shared/answerCheck';
 import { buildSolvePrompt, parseSolution } from '@shared/ai';
@@ -106,7 +107,7 @@ export default function QuestionView(p: QuestionViewProps) {
               <span className="row" style={{ gap: 8 }}>
                 <span className={'tag' + (q.source === 'ai' ? ' ai' : '')}>{q.source === 'ai' ? 'AI-generated' : SECTION_LABEL[q.section]} | {q.domain}</span>
                 <span className={'badge ' + q.difficulty}>{DIFFICULTY_LABEL[q.difficulty]}</span>
-                <span className="muted small">{q.skill}</span>
+                <span className="muted small" title={q.skill}>{topicLabel(q.skill)}</span>
               </span>
               {q.section === 'math' && settings.desmosEnabled && (
                 <button className={'iconbtn' + (calcOpen ? ' on' : '')} title="Graphing calculator (G)" aria-label="Graphing calculator" onClick={() => toggleCalc()}><CalcIcon /></button>

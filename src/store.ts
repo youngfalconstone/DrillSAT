@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { normalizeSkill } from '@shared/topics';
 import { api, type AppInfo } from './api';
 import type {
   AnswerRecord, ChatMessage, Difficulty, ProgressData, Question, QuestionIndexEntry, Section, SessionRecord, Settings,
@@ -137,7 +138,8 @@ export const useStore = create<State>((set, get) => ({
         api.store.get<Record<string, unknown>>('calc-state.json'),
       ]);
       const p = progress ?? EMPTY_PROGRESS;
-      set({ index: bank.questions, settings, appInfo, progress: p, aiQuestions: aiQuestions ?? [], calcStates: calcStates ?? {}, ready: true });
+      const indexEntries = bank.questions.map((e) => (e.skill === normalizeSkill(e.skill) ? e : { ...e, skill: normalizeSkill(e.skill) }));
+      set({ index: indexEntries, settings, appInfo, progress: p, aiQuestions: aiQuestions ?? [], calcStates: calcStates ?? {}, ready: true });
       document.documentElement.dataset.theme = settings.theme;
     } catch (err) {
       set({ loadError: (err as Error).message, ready: true });
@@ -155,6 +157,7 @@ export const useStore = create<State>((set, get) => ({
     const ai = aiQuestions.find((q) => q.id === id);
     if (ai) return ai;
     const q = await api.bank.question(id);
+    q.skill = normalizeSkill(q.skill);
     qCache.set(id, q);
     return q;
   },

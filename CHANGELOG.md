@@ -3,6 +3,23 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-11-08
+
+### Changed
+- **One simple topic list everywhere.** Practice, the Question Bank and Study Tools share a single topic
+  component: topics grouped under their domain, short names for the long College Board skill names (the
+  official name shows on hover, and data, filters and AI prompts still use it), and a domain checkbox that
+  selects or clears all of its topics. Study Tools uses the same grouping in its dropdown instead of
+  "Domain — Skill" lines.
+- Practice topics: nothing ticked means all topics. The "Only these / Everything except these" switch is
+  gone; a "Clear (n)" button appears when topics are selected.
+- Question Bank: the separate Domain and Skill lists are merged into the topic list; difficulty, format
+  and source options are stacked; the search icon sits inside the search field; the whole filter panel
+  scrolls as one instead of a small box inside it.
+- Short topic names also appear in the question header, bank results, Home and Performance.
+- "Cross-text Connections" (2 items) and "Cross-Text Connections" are now one topic.
+- Study Tools has a one-line description instead of a paragraph.
+
 ## [1.3.0] - 2026-11-08
 
 ### Changed

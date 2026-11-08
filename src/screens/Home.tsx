@@ -1,6 +1,7 @@
 import { useStore } from '../store';
 import { liveStreak, skillStats } from '@shared/adaptive';
 import { DIFFICULTY_LABEL } from '@shared/types';
+import { topicLabel } from '@shared/topics';
 import { FlameIcon } from '../components/icons';
 
 export default function Home() {
@@ -44,7 +45,7 @@ export default function Home() {
           {weak.length === 0 ? <div className="muted">Answer a few questions and your weakest topics will show up here.</div> : (
             <table className="tbl"><tbody>
               {weak.map((w) => (
-                <tr key={w.skill}><td>{w.skill}<div className="muted small">{w.domain}</div></td><td style={{ width: 120 }}><div className="bar"><div style={{ width: `${Math.round(w.accuracy * 100)}%` }} /></div></td><td style={{ width: 60 }}>{Math.round(w.accuracy * 100)}%</td>
+                <tr key={w.skill}><td title={w.skill}>{topicLabel(w.skill)}<div className="muted small">{w.domain}</div></td><td style={{ width: 120 }}><div className="bar"><div style={{ width: `${Math.round(w.accuracy * 100)}%` }} /></div></td><td style={{ width: 60 }}>{Math.round(w.accuracy * 100)}%</td>
                   <td style={{ width: 90 }}><button className="btn sm" onClick={() => startSession({ section: w.section as 'math' | 'rw', skills: [w.skill], difficultyMode: 'adaptive', count: 8, includeAI: false, onlyUnseen: true })}>Drill</button></td></tr>
               ))}
             </tbody></table>

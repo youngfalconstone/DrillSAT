@@ -137,3 +137,9 @@ Every significant choice made while building the app, with the reason.
     rejected; Chromium's fractional zoom broke programmatic scroll positions and list scroll restoration
     (deterministic e2e failures). The smaller look comes from the CSS type scale instead, and the window
     opens at a share of the work area.
+34. **Topic picker (1.4.0)**: one component for every topic list (grouped by domain, short labels, domain
+    tri-state checkbox). Short labels are display-only; the official skill name stays the key everywhere.
+    The exclude mode in Practice was removed for simplicity (the user asked for simplicity over options).
+    The bank's filter panel must stay `position: sticky`: making it a normal column made programmatic
+    scroll positions on `main.page` intermittently snap back (scroll.spec failures), most likely Chromium
+    scroll anchoring choosing a node in the tall filter column.
