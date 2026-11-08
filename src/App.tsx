@@ -41,8 +41,28 @@ export default function App() {
   useEffect(() => {
     const el = pageRef.current;
     if (!el) return;
-    el.scrollTo({ top: 0, behavior: 'instant' }); // instant also cancels an in-flight smooth scroll
+    el.scrollTo({ top: 0, behavior: 'instant' });
     el.focus({ preventScroll: true });
+    // A wheel/keyboard smooth scroll started on the previous screen keeps animating on the new
+    // content for up to ~250 ms. Re-assert the top until it ends, unless the user scrolls again.
+    let userScrolled = false;
+    const mark = () => { userScrolled = true; };
+    el.addEventListener('wheel', mark, { passive: true });
+    el.addEventListener('keydown', mark);
+    el.addEventListener('touchmove', mark, { passive: true });
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = () => {
+      if (!userScrolled && el.scrollTop !== 0) el.scrollTo({ top: 0, behavior: 'instant' });
+      if (!userScrolled && performance.now() - t0 < 300) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener('wheel', mark);
+      el.removeEventListener('keydown', mark);
+      el.removeEventListener('touchmove', mark);
+    };
   }, [screen]);
 
   useEffect(() => {
@@ -92,13 +112,15 @@ export default function App() {
         <div className="content">
           <main className="page" ref={pageRef} tabIndex={-1}>
             <PageScrollContext.Provider value={pageRef}>
-              {screen === 'home' && <Home />}
-              {screen === 'bank' && <QuestionBank />}
-              {screen === 'practice' && <Practice />}
-              {screen === 'performance' && <Performance />}
-              {screen === 'study' && <StudyTools />}
-              {screen === 'settings' && <Settings />}
-              {screen === 'help' && <Help />}
+              <div className="screen" key={screen}>
+                {screen === 'home' && <Home />}
+                {screen === 'bank' && <QuestionBank />}
+                {screen === 'practice' && <Practice />}
+                {screen === 'performance' && <Performance />}
+                {screen === 'study' && <StudyTools />}
+                {screen === 'settings' && <Settings />}
+                {screen === 'help' && <Help />}
+              </div>
             </PageScrollContext.Provider>
           </main>
           {chatOpen && <ChatPanel />}

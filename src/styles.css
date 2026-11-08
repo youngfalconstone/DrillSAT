@@ -337,3 +337,64 @@ pre.card code { background: none; padding: 0; }
 .modal h2 { font-size: var(--fs-xl); margin-bottom: var(--s-2); }
 
 .katex { font-size: 1.05em; }
+
+/* ==========================================================================
+   Motion. Tokens live here and are the only durations/easings used.
+   Only transform and opacity (plus cheap color/border-color on hover) are animated.
+   ========================================================================== */
+:root {
+  --dur-1: 150ms;   /* hover/press feedback */
+  --dur-2: 200ms;   /* state changes, modals, toasts */
+  --dur-3: 280ms;   /* screen and question transitions */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scale-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes slide-in-right { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* screen and question entrances */
+.screen { animation: fade-up var(--dur-3) var(--ease) both; }
+.qenter { animation: fade-up var(--dur-3) var(--ease) both; }
+.grid3 > .stat { animation: fade-up var(--dur-3) var(--ease) both; }
+.grid3 > .stat:nth-child(2) { animation-delay: 60ms; }
+.grid3 > .stat:nth-child(3) { animation-delay: 120ms; }
+
+/* interactive feedback */
+.btn, .iconbtn, .nav button, .qitem, .choice, .quick button, .check, .pill {
+  transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease), transform var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
+}
+.btn:not(:disabled):active, .choice:not(:disabled):active, .qitem:active { transform: scale(0.985); }
+.choice .state { animation: scale-in var(--dur-2) var(--ease) both; }
+.result { animation: fade-up var(--dur-2) var(--ease) both; }
+.rationale { animation: fade-in var(--dur-3) var(--ease) both; }
+.progress > div { transition: transform var(--dur-3) var(--ease); }
+.bar > div { transition: transform var(--dur-3) var(--ease); }
+.spr input { transition: border-color var(--dur-1) var(--ease); }
+
+/* overlays and panels */
+.modal-bg { animation: fade-in var(--dur-1) ease-out both; }
+.modal { animation: scale-in var(--dur-2) var(--ease) both; }
+.chatpanel { animation: slide-in-right var(--dur-3) var(--ease) both; }
+.calcpanel { animation: fade-up var(--dur-3) var(--ease) both; }
+.toast { animation: toast-in var(--dur-2) var(--ease) both; }
+.msg { animation: fade-up var(--dur-2) var(--ease) both; }
+
+/* loading placeholders: same footprint as the content they replace, so nothing jumps */
+.skeleton { background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: var(--radius-sm); height: 14px; }
+.skeleton.title { height: 22px; width: 40%; }
+.skeleton.line { width: 100%; }
+.skeleton.line.short { width: 70%; }
+.skeleton.choice { height: 60px; border-radius: 10px; }
+.skel-stack { display: flex; flex-direction: column; gap: var(--s-3); }
+
+/* users who asked for less motion get instant state changes and no shimmer */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  .skeleton { animation: none; background: var(--border); }
+  .spinner { animation-duration: 0.8s !important; animation-iteration-count: infinite !important; } /* progress indicator, not decoration */
+}

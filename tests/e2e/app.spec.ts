@@ -105,6 +105,20 @@ test('settings: keys are stored and reported, AI errors are clear without a key'
   await expect(page.locator('.chatpanel .error')).toContainText(/API key|offline/);
   await page.screenshot({ path: path.join(shots, '05-settings-tutor.png') });
   await page.keyboard.press('Escape');
+  // dark theme renders and persists
+  await page.locator('select.select').filter({ hasText: 'Light (matches' }).selectOption('dark');
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark');
+  await page.getByRole('button', { name: 'Question Bank' }).click();
+  await page.getByPlaceholder('keyword or question ID').fill('f1bfbed3');
+  await page.locator('.qlist .qitem').first().click();
+  await page.locator('.choice').first().waitFor();
+  await page.keyboard.press('b');
+  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
+  await page.locator('.result').waitFor();
+  await page.screenshot({ path: path.join(shots, '07-dark.png') });
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.locator('select.select').filter({ hasText: 'Light (matches' }).selectOption('light');
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('light');
 });
 
 test('desmos calculator panel', async () => {

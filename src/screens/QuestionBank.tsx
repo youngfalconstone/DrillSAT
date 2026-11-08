@@ -61,12 +61,14 @@ export default function QuestionBank() {
           <span className="muted small">Question {idx + 1} of {results.length} · ID {open.id}</span>
           <button className="btn sm primary" onClick={() => startSession({ section: open.section, skills: [open.skill], difficultyMode: 'adaptive', count: 10, includeAI: true, onlyUnseen: true })}>Practice this skill</button>
         </div>
-        <QuestionView
-          question={open} answer={answer} submitted={submitted} marked={progress.reviewFlags.includes(open.id)}
-          onAnswer={setAnswer} onSubmit={() => setSubmitted(true)} onToggleMark={() => toggleReviewFlag(open.id)}
-          onPrev={() => idx > 0 && openQ(results[idx - 1])} onNext={() => idx + 1 < results.length && openQ(results[idx + 1])}
-          prevDisabled={idx <= 0} nextDisabled={idx + 1 >= results.length}
-        />
+        <div className="qenter" key={open.id}>
+          <QuestionView
+            question={open} answer={answer} submitted={submitted} marked={progress.reviewFlags.includes(open.id)}
+            onAnswer={setAnswer} onSubmit={() => setSubmitted(true)} onToggleMark={() => toggleReviewFlag(open.id)}
+            onPrev={() => idx > 0 && openQ(results[idx - 1])} onNext={() => idx + 1 < results.length && openQ(results[idx + 1])}
+            prevDisabled={idx <= 0} nextDisabled={idx + 1 >= results.length}
+          />
+        </div>
       </div>
     );
   }

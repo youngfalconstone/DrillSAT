@@ -6,6 +6,7 @@ import { skillStats } from '@shared/adaptive';
 import { reviewSession } from '@shared/ai';
 import { complete, AIRequestError } from '../api';
 import QuestionView from '../components/QuestionView';
+import { QuestionSkeleton } from '../components/Skeleton';
 import { ClockIcon, PerfIcon, SparkIcon } from '../components/icons';
 
 function fmt(ms: number): string {
@@ -142,13 +143,15 @@ function Player() {
         <button className="btn sm" onClick={() => setConfirmEnd(true)}>End session</button>
       </div>
 
-      {!q ? <div className="card empty"><span className="spinner" /><div className="mt">Loading question…</div></div> : (
-        <QuestionView
-          question={q} answer={a?.answer ?? null} submitted={!!a?.submitted} marked={!!a?.marked}
-          onAnswer={sessionSetAnswer} onSubmit={() => void sessionSubmit()} onToggleMark={sessionToggleMark}
-          onPrev={() => sessionGoto(s.idx - 1)} prevDisabled={s.idx === 0}
-          onNext={atEnd ? () => setConfirmEnd(true) : () => void sessionNext()} nextLabel={atEnd ? 'Finish' : 'Next'}
-        />
+      {!q ? <QuestionSkeleton /> : (
+        <div className="qenter" key={q.id}>
+          <QuestionView
+            question={q} answer={a?.answer ?? null} submitted={!!a?.submitted} marked={!!a?.marked}
+            onAnswer={sessionSetAnswer} onSubmit={() => void sessionSubmit()} onToggleMark={sessionToggleMark}
+            onPrev={() => sessionGoto(s.idx - 1)} prevDisabled={s.idx === 0}
+            onNext={atEnd ? () => setConfirmEnd(true) : () => void sessionNext()} nextLabel={atEnd ? 'Finish' : 'Next'}
+          />
+        </div>
       )}
 
       <div className="row mt" style={{ gap: 6 }}>
