@@ -115,6 +115,7 @@ test('settings: keys are stored and reported, AI errors are clear without a key'
   await page.keyboard.press('b');
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
   await page.locator('.result').waitFor();
+  await page.waitForTimeout(400); // let entrance animations finish before the screenshot
   await page.screenshot({ path: path.join(shots, '07-dark.png') });
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.locator('select.select').filter({ hasText: 'Light (matches' }).selectOption('light');

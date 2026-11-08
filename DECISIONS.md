@@ -95,3 +95,23 @@ Every significant choice made while building the app, with the reason.
     `release/win-unpacked/DrillSAT.exe` (`SAT_E2E_EXE`), which exercises the asar + `resources/bank`
     paths. `node_modules` is excluded from the package because Vite bundles everything (asar 2 MB; the
     installer is ~137 MB and the portable exe ~122 MB, almost all Electron/Chromium + the 46 MB bank).
+
+## 1.1.0 (smoothness and readability revamp)
+
+24. **Scroll bug root cause**: the shell grid row had no explicit size, so it grew to the content height,
+    `main.page` never overflowed and the `overflow: hidden` body ate wheel/keyboard input. Fixed in the
+    layout (`grid-template-rows: minmax(0, 1fr)`, `min-height: 0` down the chain), not by forcing
+    `scrollTop`. `main.page` is focusable (tabindex -1) and focused on each screen so keyboard scrolling
+    works; an input-driven smooth scroll that is still animating when the screen changes is cancelled
+    (re-asserted for 300 ms unless the user scrolls again). The question list restores its position on back.
+25. **Contrast**: tokens were checked with a WCAG script (see git history of this file). Muted text moved
+    from #6b7280 to #5b6372 (5.5:1 on the page background), links use #1558b0 / #60a5fa, amber #92400e,
+    green #166534. Buttons keep #1d6fd8 with white (4.86:1).
+26. **Motion**: only transform/opacity are animated (hover colour changes aside); tokens 150/200/280 ms with
+    one ease curve; skeletons replace spinners for question loads; `prefers-reduced-motion` zeroes every
+    animation except the small progress spinner. Frame timing is asserted in e2e (p95 < 34 ms while
+    scrolling the full list; measured ~17 ms).
+27. **Uninstall lesson**: an inventory that tests `%APPDATA%\DrillSAT` and `%APPDATA%\drillsat` separately
+    lists the same NTFS folder twice. Treat case-variant paths as one before any delete decision.
+28. **Old release handling**: v1.0.0 keeps its tag and notes (marked superseded) but its installer assets are
+    deleted, so the only downloads are the current ones.

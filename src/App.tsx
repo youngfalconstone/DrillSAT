@@ -30,7 +30,7 @@ const TITLES: Record<Screen, [string, string]> = {
 };
 
 export default function App() {
-  const { ready, loadError, screen, nav, init, chatOpen, toggleChat, toast, session, settings } = useStore();
+  const { ready, loadError, screen, nav, init, chatOpen, toggleChat, toast, session, settings, appInfo } = useStore();
   const pageRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function App() {
           <button className={screen === 'help' ? 'active' : ''} onClick={() => nav('help')}><HelpIcon /> Help</button>
         </nav>
         <div className="spacer" />
-        <div className="foot">{settings.hasLlmKey ? 'AI: connected' : 'AI: add a key in Settings'}<br />{navigator.onLine ? 'Online' : 'Offline — bank only'}</div>
+        <div className="foot">{settings.hasLlmKey ? 'AI: connected' : 'AI: add a key in Settings'}<br />{navigator.onLine ? 'Online' : 'Offline — bank only'}<br />DrillSAT v{appInfo?.version ?? '…'}</div>
       </aside>
       <div className="main">
         <header className="header">
