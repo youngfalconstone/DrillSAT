@@ -119,3 +119,10 @@ Every significant choice made while building the app, with the reason.
     silently stops without it. The renderer remains sandboxed (contextIsolation, no nodeIntegration, IPC
     allow-list), scripts can still only come from the app itself and desmos.com, so the added exposure is
     limited to what desmos.com serves.
+30. **1.2.0 layout**: choice state is conveyed by colour plus an icon badge on the letter circle instead of an
+    inline label, because any inline element changes the text column width and re-wraps the answer. Border
+    width is 1 px in every state; the "thicker" selected look comes from an inset box-shadow, which does not
+    affect layout. Questions whose longest option exceeds 110 characters use a stacked layout (choices
+    full-width under the stem, capped at 96ch) so Reading & Writing answers read in 1-3 lines.
+31. **AI solution is structured JSON** (keyConcept / steps[text, math] / answer / trap) rendered with real
+    components; a markdown-subset renderer is the fallback for non-JSON replies so asterisks never show.

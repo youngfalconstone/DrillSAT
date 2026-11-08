@@ -3,6 +3,26 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-08
+
+### Changed
+- **Calmer, more open layout.** Base type 14 px with 16 px reading text at 1.65 line height and a 68-character
+  measure; 8 px spacing scale with 32 px card padding, 24 px gaps and 40 px page gutters; slimmer sidebar
+  (168 px, 40 px nav items); lighter header; the session bar is now a single quiet line (question count,
+  progress, timer, mode, End session) instead of a boxed card; softer borders and shadows; content capped at
+  1320 px and centred on large windows. The question/answer split is 7:5, and questions with long answer
+  choices (typical for Reading & Writing) stack the choices full-width under the passage so they read in
+  1-3 lines; everything stacks below 1180 px.
+- **Answer choices never re-wrap.** The inline "Selected" pill is gone. Selection, correct and incorrect are
+  shown by border/background colour plus a small check or cross badge on the letter circle, which lives in
+  the fixed-width letter column. All states share the same 1 px border, padding and type, so text never
+  moves. Guarded by an end-to-end test that measures every choice's text box across default, hover, focus,
+  selected and checked states.
+- **Designed AI solution.** The solver now returns structured JSON that is rendered as a key-concept callout,
+  a numbered stepper with per-step math, a highlighted final answer and an optional "common trap" note,
+  with a skeleton while it loads and a fade-in when ready. Malformed replies fall back to a proper
+  markdown renderer (no raw asterisks); errors show a retry button. The prompt forbids filler.
+
 ## [1.1.1] - 2026-11-08
 
 ### Fixed

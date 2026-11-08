@@ -7,7 +7,7 @@ import { reviewSession } from '@shared/ai';
 import { complete, AIRequestError } from '../api';
 import QuestionView from '../components/QuestionView';
 import { QuestionSkeleton } from '../components/Skeleton';
-import { ClockIcon, PerfIcon, SparkIcon } from '../components/icons';
+import { ClockIcon, SparkIcon } from '../components/icons';
 
 function fmt(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -136,7 +136,7 @@ function Player() {
   return (
     <div>
       <div className="sessionbar">
-        <span className="count"><PerfIcon /> Question {s.idx + 1} of {total}</span>
+        <span className="count">Question {s.idx + 1} <span className="muted">of {total}</span></span>
         <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered} aria-label="Questions answered"><div style={{ width: '100%', transform: `scaleX(${answered / total})` }} /></div>
         {settings.timerEnabled && <span className="timer" title="This question / whole session"><ClockIcon /> {fmt(qMs)} <span className="muted">/ {fmt(sessionMs)}</span></span>}
         <span className="pill blue">{SECTION_LABEL[s.config.section]}: {modeLabel}</span>
