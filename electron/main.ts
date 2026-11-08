@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { encryptionAvailable, getSecret, getSettings, readJson, setSecret, updateSettings, writeJson } from './settings';
 import { complete, LLMError, type CompletionRequest } from './llm';
+import { initUpdater } from './updater';
 
 // ---------- Wine detection & flags (must run before app is ready) ----------
 function runningUnderWine(): boolean {
@@ -35,7 +36,7 @@ const BANK_DIR = app.isPackaged
   ? path.join(process.resourcesPath, 'bank')
   : path.join(app.getAppPath(), 'data', 'bank');
 
-const ALLOWED_STORES = new Set(['progress.json', 'ai-questions.json', 'calc-state.json']);
+const ALLOWED_STORES = new Set(['progress.json', 'ai-questions.json', 'calc-state.json', 'active-test.json']);
 
 // ---------- IPC ----------
 ipcMain.handle('bank:index', async () => {
@@ -153,6 +154,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
+  initUpdater(() => win);
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

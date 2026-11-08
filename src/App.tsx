@@ -2,11 +2,13 @@ import { useEffect, useRef } from 'react';
 import { useStore, type Screen } from './store';
 import { PageScrollContext } from './pageScroll';
 import ChatPanel from './components/ChatPanel';
-import { BankIcon, ChatIcon, ChevronDown, HelpIcon, HomeIcon, PerfIcon, PracticeIcon, SettingsIcon, ToolsIcon } from './components/icons';
+import { BankIcon, ChatIcon, ChevronDown, HelpIcon, HomeIcon, PerfIcon, PracticeIcon, SettingsIcon, TestIcon, ToolsIcon } from './components/icons';
+import UpdateBanner from './components/UpdateBanner';
 import logo from './assets/logo.png';
 import Home from './screens/Home';
 import QuestionBank from './screens/QuestionBank';
 import Practice from './screens/Practice';
+import Tests from './screens/Tests';
 import Performance from './screens/Performance';
 import StudyTools from './screens/StudyTools';
 import Settings from './screens/Settings';
@@ -16,6 +18,7 @@ const NAV: { id: Screen; label: string; icon: React.FC<React.SVGProps<SVGSVGElem
   { id: 'home', label: 'Home', icon: HomeIcon },
   { id: 'bank', label: 'Question Bank', icon: BankIcon },
   { id: 'practice', label: 'Practice', icon: PracticeIcon },
+  { id: 'tests', label: 'Practice Tests', icon: TestIcon },
   { id: 'performance', label: 'Performance', icon: PerfIcon },
   { id: 'study', label: 'Study Tools', icon: ToolsIcon },
 ];
@@ -23,14 +26,17 @@ const TITLES: Record<Screen, [string, string]> = {
   home: ['DrillSAT', 'Practice with official SAT questions, build your skills, and track your progress.'],
   bank: ['SAT Question Bank', 'Browse and filter all 3,770 official questions, plus your AI-generated ones.'],
   practice: ['Practice', 'Answer questions one at a time with a timer, feedback, and the graphing calculator.'],
-  performance: ['Performance', 'Accuracy by topic and difficulty, streaks, and session history.'],
+  tests: ['Practice Tests', 'Full-length, timed and adaptive, with an estimated score.'],
+  performance: ['Performance', 'Estimated score, accuracy by topic and difficulty, streaks, and session history.'],
   study: ['Study Tools', 'Generate new AI questions and get step-by-step solutions.'],
-  settings: ['Settings', 'API keys, model, calculator, theme and timer.'],
+  settings: ['Settings', 'API keys, model, calculator, theme, timer, pacing and updates.'],
   help: ['Help', 'Keyboard shortcuts, setup and troubleshooting.'],
 };
 
 export default function App() {
-  const { ready, loadError, screen, nav, init, chatOpen, toggleChat, toast, session, settings, appInfo } = useStore();
+  const { ready, loadError, screen, nav, init, chatOpen, toggleChat, toast, session, settings, appInfo, test } = useStore();
+  // no AI help while a timed test is on screen, as on test day
+  const testing = !!test && screen === 'tests' && test.phase !== 'break';
   const pageRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -75,7 +81,7 @@ export default function App() {
       const t = e.target as HTMLElement;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key.toLowerCase() === 't') toggleChat();
+      if (e.key.toLowerCase() === 't' && !useStore.getState().test) toggleChat();
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
@@ -92,7 +98,7 @@ export default function App() {
         <div className="program">SAT <ChevronDown style={{ width: 22 }} /></div>
         <nav className="nav">
           {NAV.map((n) => (
-            <button key={n.id} className={screen === n.id ? 'active' : ''} onClick={() => nav(n.id)}><n.icon /> {n.label}{n.id === 'practice' && session ? ' •' : ''}</button>
+            <button key={n.id} className={screen === n.id ? 'active' : ''} onClick={() => nav(n.id)}><n.icon /> {n.label}{(n.id === 'practice' && session) || (n.id === 'tests' && test) ? ' •' : ''}</button>
           ))}
           <div className="divider" />
           <button className={screen === 'settings' ? 'active' : ''} onClick={() => nav('settings')}><SettingsIcon /> Settings</button>
@@ -105,7 +111,7 @@ export default function App() {
         <header className="header">
           <div><h1>{title}</h1><div className="sub">{sub}</div></div>
           <div className="right">
-            <button className={'btn sm' + (chatOpen ? ' primary' : '')} onClick={() => toggleChat()} title="AI tutor (T)"><ChatIcon /> AI Tutor</button>
+            {!testing && <button className={'btn sm' + (chatOpen ? ' primary' : '')} onClick={() => toggleChat()} title="AI tutor (T)"><ChatIcon /> AI Tutor</button>}
             <div className="avatar">ME</div>
           </div>
         </header>
@@ -116,6 +122,7 @@ export default function App() {
                 {screen === 'home' && <Home />}
                 {screen === 'bank' && <QuestionBank />}
                 {screen === 'practice' && <Practice />}
+                {screen === 'tests' && <Tests />}
                 {screen === 'performance' && <Performance />}
                 {screen === 'study' && <StudyTools />}
                 {screen === 'settings' && <Settings />}
@@ -123,9 +130,10 @@ export default function App() {
               </div>
             </PageScrollContext.Provider>
           </main>
-          {chatOpen && <ChatPanel />}
+          {chatOpen && !testing && <ChatPanel />}
         </div>
       </div>
+      <UpdateBanner />
       {toast && <div className={'toast ' + toast.kind}>{toast.text}</div>}
     </div>
   );

@@ -54,3 +54,22 @@ export const FlameIcon = (p: SVGProps<SVGSVGElement>) => (
 export const Logo = (p: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2c-1.5 2.5-5 3.5-7 4 1 5 3 9 7 12 4-3 6-7 7-12-2-.5-5.5-1.5-7-4zm0 3.2c1 1.3 2.8 2 4.4 2.5-.8 3.3-2.2 6-4.4 8.1-2.2-2.1-3.6-4.8-4.4-8.1C9.2 7.2 11 6.5 12 5.2z" /></svg>
 );
+export const HighlightIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M9 11l-5 5v4h4l5-5" /><path d="M14 4l6 6-7 7-6-6z" /><path d="M3 21h8" /></svg>
+);
+export const StrikeIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M3 12h18" /><path d="M6 17l2.5-10L11 17M7 13.5h3" strokeWidth={1.6} /><path d="M14 7h3a2 2 0 0 1 0 4h-3V7zm0 4h3.5a2 2 0 0 1 0 4H14v-4z" strokeWidth={1.6} /></svg>
+);
+export const FormulaIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M4 7h7M7.5 3.5v7M4 17h7M14 4l6 6M20 4l-6 6M14 16h6M17 13v.01M17 19v.01" /></svg>
+);
+export const FlagIcon = (p: SVGProps<SVGSVGElement> & { filled?: boolean }) => {
+  const { filled, ...rest } = p;
+  return <svg {...base(rest)} fill={filled ? 'currentColor' : 'none'}><path d="M5 21V4h11l-2 4 2 4H5" /></svg>;
+};
+export const TestIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M14 8h2M14 14h2" /></svg>
+);
+export const RefreshIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></svg>
+);

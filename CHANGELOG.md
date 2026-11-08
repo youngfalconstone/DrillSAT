@@ -3,6 +3,42 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-11-08
+
+### Added
+- **Bluebook-style answer tools** in practice, the bank and practice tests: answer eliminator (cross out
+  choices, choosing one restores it; X), highlighter (select text to highlight, click to remove; H) and the
+  Math reference sheet (R).
+- **Full-length practice tests** (new Practice Tests screen): full test or one section; Reading and Writing
+  2 × 27 questions in 32 minutes each, Math 2 × 22 in 35 minutes each, 10-minute break; module 2 routed
+  harder or easier from module 1; College Board domain mix, R&W question order by type, about six grid-ins
+  per Math module; countdown with hide, question navigator, Check Your Work page, auto-submit at 0:00;
+  saved after every change and resumed after a restart with the clock paused. No difficulty labels, answers
+  or AI help during the test. Results: total and section scores with likely ranges, correct by domain and
+  module, routing, time used, pacing, and every question with its official explanation. Answers count
+  toward progress, levels, streaks and spaced review.
+- **Estimated SAT score** on Home and Performance, and on every test result. Built on College Board's score
+  band (1–7) for each official question, assigned by College Board with RP67 mapping, and the published
+  band score ranges and percentile anchors ("Skills Insight for the SAT Suite"). A 3PL item-response model
+  on the 200–800 scale, with the slope set so a full section has the ±30-point precision College Board
+  reports for real scores. Reports the score and the central 80% range; needs 20 official questions per
+  section; uses the first attempt at each of the last 60 official questions; ignores AI questions. Unit tests
+  simulate test takers with known scores across the scale and check error and range coverage.
+- **Spaced review**: missed questions return after 1, 3 and 7 days until answered correctly three times;
+  Home shows what is due with one-click review sessions.
+- **Pacing feedback** (Settings, on by default): time per question vs. the real test pace after each check,
+  and pacing summaries for sessions and tests.
+- **Automatic updates** (electron-updater, GitHub Releases): the installed app downloads new versions in
+  the background and installs them on restart or quit; the portable app shows a download link. Status and
+  "Check for updates" in Settings.
+
+### Changed
+- **Question Bank previews show real math** instead of spoken alt text ("(12x + 28)/4 − s/13 = r(x − 8)"
+  instead of "StartFraction 12 x plus 28 Over 4 EndFraction…") and no longer start with figure descriptions.
+  Search and AI duplicate checks use the same clean text. (758 previews had spoken math; 2 legitimate prose
+  uses remain.)
+- The bank index carries each question's College Board score band.
+
 ## [1.5.0] - 2026-11-08
 
 ### Changed

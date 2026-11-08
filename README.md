@@ -2,7 +2,7 @@
 
 # DrillSAT
 
-**Current version: 1.5.0** · **Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest) · [Changelog](CHANGELOG.md)
+**Current version: 1.6.0** · **Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest) · [Changelog](CHANGELOG.md)
 
 <p align="center"><img src="docs/img/tour.gif" alt="DrillSAT tour: question bank, a math question with the official explanation, a practice session and the AI tutor" width="800"></p>
 
@@ -28,10 +28,10 @@ Everything except the AI features and the calculator works offline.
 ## Quick start (Windows)
 
 1. Grab a build from the [download page](https://youngfalconstone.github.io/DrillSAT/) or the [latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest):
-   - `DrillSAT-1.5.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
+   - `DrillSAT-1.6.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
      no admin rights needed, adds a Start Menu shortcut (and a desktop shortcut when you run the
      installer interactively; the silent `/S` install skips it).
-   - `DrillSAT-1.5.0-portable.exe` — single portable executable, nothing to install.
+   - `DrillSAT-1.6.0-portable.exe` — single portable executable, nothing to install.
    The binaries are not code-signed, so SmartScreen shows "Windows protected your PC" on first launch:
    click *More info* → *Run anyway*.
    No separate runtime is required; Electron bundles its own Chromium and Node.
@@ -76,7 +76,7 @@ runs best. Use the **portable** exe.
 # Wine 8+ recommended (tested configuration target: wine-9.x, 64-bit prefix)
 export WINEPREFIX=~/.wine-sat   # optional: dedicated prefix
 winecfg                          # once; pick Windows 10
-wine DrillSAT-1.5.0-portable.exe
+wine DrillSAT-1.6.0-portable.exe
 ```
 
 Notes and known workarounds:
@@ -84,7 +84,7 @@ Notes and known workarounds:
 - The app detects Wine (via `WINEPREFIX`/`WINELOADER` or `winemenubuilder.exe` in `system32`) and
   automatically disables GPU acceleration and the Chromium sandbox, which are the two things that
   commonly break Electron under Wine. You can force these flags on any platform:
-  `wine DrillSAT-1.5.0-portable.exe --disable-gpu --no-sandbox`.
+  `wine DrillSAT-1.6.0-portable.exe --disable-gpu --no-sandbox`.
 - If the window opens but stays blank, also try `--disable-gpu-compositing --in-process-gpu`.
 - Secure key storage: under Wine, DPAPI is usually available; if `safeStorage` reports it is not, the
   app stores keys base64-obfuscated and says so in Settings → About ("Secure key storage: Unavailable").
@@ -101,11 +101,31 @@ This build was produced and tested on Windows 11; see `DECISIONS.md` #8 for the 
   (official / AI); keyword or ID search; opens any question with official explanation.
 - **Practice mode**: one question at a time, per-question and per-session timers (can be switched
   off), mark for review, MCQ and student-produced (grid-in) answers checked with the SAT grid-in
-  rules, keyboard shortcuts (A–D / 1–4, Enter, ←/→, M, G, T), instant feedback with the official
+  rules, keyboard shortcuts (A–D / 1–4, Enter, ←/→, M, G, R, X, H, T), instant feedback with the official
   rationale, session summary.
+- **Bluebook-style answer tools**: answer eliminator (cross out choices; choosing a crossed-out answer
+  restores it), highlighter for passages and questions, and the Math reference sheet. Available in practice,
+  the bank and practice tests.
+- **Full-length practice tests**: timed like the digital SAT (Reading and Writing 2 × 27 questions in
+  32 minutes each, Math 2 × 22 in 35 minutes each, 10-minute break), module 2 routed harder or easier from
+  module 1, College Board domain mix and question order, Check Your Work page, auto-submit when time runs
+  out, resumes after closing the app. Results: section and total scores with likely ranges, domains,
+  modules, pacing and every question with its official explanation. No AI help during a test.
+- **Estimated SAT score**: from College Board's own score band (1–7) on every official question, which
+  College Board assigned by RP67 mapping and publishes with the band score ranges ("Skills Insight for
+  the SAT Suite"). A 3PL item-response model on the 200–800 scale, calibrated so a full section has the
+  ±30-point precision College Board reports, gives the score and an 80% range. Shown after 20 official
+  questions per section; simulation tests check bias and range coverage across the scale
+  (`src/shared/score.ts`, `tests/score.test.ts`).
+- **Spaced review**: missed questions come back after 1, 3 and 7 days until answered correctly three
+  times; start a review from Home.
+- **Pacing feedback** (optional): time per question compared with the real test pace (about 71 s for
+  Reading and Writing, 95 s for Math) after each check and in session and test summaries.
+- **Automatic updates**: the installed app downloads new GitHub releases in the background and installs
+  them on restart; the portable app links to the download.
 - **Adaptive difficulty**: per-topic level from the last six answers (≥80 % → up, ≤40 % → down);
   manual override per topic in Performance; or fixed/mixed difficulty per session.
-- **Topic selection**: include or exclude any skills for a session.
+- **Topic selection**: any mix of topics and whole domains for a session.
 - **AI question generation** (Study Tools): pick any number of topics or whole domains (nothing ticked =
   all topics) and up to 10 questions, spread evenly over them. New items are in the official digital SAT
   format for each skill, modeled on three official items of the same skill, College Board difficulty and answer format.

@@ -143,3 +143,31 @@ Every significant choice made while building the app, with the reason.
     The bank's filter panel must stay `position: sticky`: making it a normal column made programmatic
     scroll positions on `main.page` intermittently snap back (scroll.spec failures), most likely Chromium
     scroll anchoring choosing a node in the tall filter column.
+35. **Score estimate (1.6.0)**: calibration comes only from College Board publications: each official
+    question's Skills Insight score band (the question-bank API's `score_band_range_cd`, 1-7, nested in
+    E/M/H), the RP67 rule used to assign bands, the band score ranges and percentile anchors (Skills Insight
+    Tables 3 and 15), and the +/-30-point section score range (SAT score report guide). A band-k question is
+    answered correctly with p = 0.67 at the score where band k begins; 3PL with guessing 0.2 for multiple
+    choice; slope 0.013 per point, which gives a ~30-point posterior SD for a full section; prior from the
+    SAT percentile anchors (median 550), widened 1.5x so extreme scorers are not pulled to the middle. The
+    80% interval was chosen over +/-1 SD because simulated coverage of +/-1 SD was ~60% (overconfident).
+    Known limit: above ~750 the bank has few questions hard enough to separate scores (all-correct sections
+    estimate ~750-770 with ranges reaching 800); the UI says so.
+36. **Practice test blueprint**: module lengths/times from the digital SAT; per-module R&W slots by question
+    type in the official order (Craft and Structure, Information and Ideas, Standard English Conventions,
+    Expression of Ideas); Math 8/7/4/3 and 7/8/3/4 by domain with six grid-ins per module, ordered by band
+    with some mixing. Module 2 is harder when the module 1 estimate is >= 540. Real tests also include
+    unscored pretest questions; here every question is scored.
+37. **Highlights use the CSS Custom Highlight API** with character offsets, so official HTML/MathML is never
+    rewritten and highlights survive re-rendering and test resume. Test questions do not reach the AI tutor.
+38. **Updater**: electron-updater bundled by Vite into main.js (no runtime node_modules); GitHub provider
+    from `publish` in electron-builder.yml (`--publish never`; releases are uploaded with gh and must include
+    latest.yml and the setup blockmap). Off when unpackaged, under the e2e tests (SAT_USER_DATA) or with
+    SAT_NO_UPDATE; SAT_UPDATE_URL points it at a generic feed to test the full download-and-install flow.
+    The portable exe cannot replace itself, so it only links to the release.
+39. **Clean bank text**: previews/search use structural MathML-to-text (tools/clean_text.py) instead of
+    MathML alttext, which is spoken English; figures and screen-reader descriptions are excluded from
+    previews. The question files themselves are unchanged (verified byte for byte).
+40. **Scroll test settling**: scroll.spec waits for smooth scrolling to go idle before setting positions; a
+    compositor smooth scroll still running under full-suite load could override the programmatic position
+    (~1 in 5 full runs). Disabling scroll anchoring did not change this and was reverted.

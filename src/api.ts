@@ -24,6 +24,21 @@ interface Api {
   store: { get<T>(name: string): Promise<T | null>; set(name: string, data: unknown): Promise<boolean> };
   ai: { complete(req: CompletionRequest): Promise<CompleteResult>; test(): Promise<{ ok: true; model: string; text: string } | { ok: false; error: AIError }> };
   app: { info(): Promise<AppInfo>; openExternal(url: string): Promise<void> };
+  update: {
+    get(): Promise<UpdateState>;
+    check(): Promise<UpdateState>;
+    install(): Promise<boolean>;
+    onState(cb: (s: UpdateState) => void): () => void;
+  };
+}
+
+export interface UpdateState {
+  status: 'disabled' | 'idle' | 'checking' | 'none' | 'available' | 'downloading' | 'ready' | 'error';
+  version?: string;
+  percent?: number;
+  message?: string;
+  portable: boolean;
+  checkedAt?: number;
 }
 
 declare global {

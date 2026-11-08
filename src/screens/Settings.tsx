@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
 import type { LLMProvider } from '@shared/types';
+import { useUpdateState } from '../components/UpdateBanner';
 
 const ANTHROPIC_MODELS = ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-opus-4-8', 'claude-sonnet-4-6'];
 const OPENAI_MODELS = ['gpt-5', 'gpt-5-mini', 'gpt-4.1', 'gpt-4o', 'o3'];
 
 export default function Settings() {
   const { settings, updateSettings, setSecret, appInfo, showToast } = useStore();
+  const upd = useUpdateState();
+  const [checking, setChecking] = useState(false);
   const [llmKey, setLlmKey] = useState('');
   const [desmosKey, setDesmosKey] = useState('');
   const [customModel, setCustomModel] = useState('');
@@ -75,9 +78,22 @@ export default function Settings() {
           <h2>Practice</h2>
           <label className="switch"><input type="checkbox" checked={settings.timerEnabled} onChange={(e) => void updateSettings({ timerEnabled: e.target.checked })} /> Show timers (per question and per session)</label>
           <div className="mt"><label className="switch"><input type="checkbox" checked={settings.adaptiveEnabled} onChange={(e) => void updateSettings({ adaptiveEnabled: e.target.checked })} /> Adaptive difficulty (adjusts per topic from your recent answers)</label></div>
+          <div className="mt"><label className="switch"><input type="checkbox" checked={settings.pacingFeedback} onChange={(e) => void updateSettings({ pacingFeedback: e.target.checked })} /> Pacing feedback (compare your time per question with the real test pace)</label></div>
           <label className="field mt"><span>Theme</span>
             <select className="select" value={settings.theme} onChange={(e) => void updateSettings({ theme: e.target.value as 'light' | 'dark' })}><option value="light">Light (matches College Board)</option><option value="dark">Dark</option></select>
           </label>
+        </div>
+        <div className="card">
+          <h2>Updates</h2>
+          <p className="small" data-testid="update-status">{updateText(upd)}</p>
+          <div className="row">
+            {upd?.status === 'ready' && <button className="btn sm primary" onClick={() => void api.update.install()}>Restart to update</button>}
+            {upd?.portable && upd.status === 'available' && <button className="btn sm primary" onClick={() => void api.update.install()}>Download {upd.version}</button>}
+            {upd && upd.status !== 'disabled' && (
+              <button className="btn sm" disabled={checking || upd.status === 'checking' || upd.status === 'downloading'}
+                onClick={async () => { setChecking(true); try { await api.update.check(); } finally { setChecking(false); } }}>Check for updates</button>
+            )}
+          </div>
         </div>
         <div className="card">
           <h2>About</h2>
@@ -92,4 +108,18 @@ export default function Settings() {
       </div>
     </div>
   );
+}
+
+function updateText(u: ReturnType<typeof useUpdateState>): string {
+  if (!u) return 'Checking update status…';
+  switch (u.status) {
+    case 'disabled': return 'Automatic updates are off in this build (development or test run).';
+    case 'idle': return 'DrillSAT checks GitHub for new versions automatically.';
+    case 'checking': return 'Checking for updates…';
+    case 'none': return `You have the latest version.${u.checkedAt ? ` Checked ${new Date(u.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.` : ''}`;
+    case 'available': return u.portable ? `DrillSAT ${u.version} is available. The portable app can't update itself; download the new version.` : `DrillSAT ${u.version} is available.`;
+    case 'downloading': return `Downloading DrillSAT ${u.version}… ${u.percent ?? 0}%`;
+    case 'ready': return `DrillSAT ${u.version} is downloaded and installs when you restart (or the next time you quit).`;
+    case 'error': return `Could not check for updates: ${u.message ?? 'unknown error'}. DrillSAT will try again later.`;
+  }
 }

@@ -5,6 +5,7 @@ import type { Difficulty } from '@shared/types';
 import { topicLabel } from '@shared/topics';
 import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
 import { FlameIcon } from '../components/icons';
+import { ScoreCard } from '../components/ScoreCard';
 
 export default function Performance() {
   const { progress, setLevel, resetProgress, index } = useStore();
@@ -24,6 +25,7 @@ export default function Performance() {
 
   return (
     <div>
+      <div style={{ marginBottom: 32 }}><ScoreCard /></div>
       <div className="grid3">
         <div className="stat"><div className="v">{answers.length}</div><div className="l">Questions answered in {progress.sessions.length} session{progress.sessions.length === 1 ? '' : 's'}</div></div>
         <div className="stat"><div className="v">{answers.length ? Math.round((100 * correct) / answers.length) : 0}%</div><div className="l">Overall accuracy</div></div>
@@ -49,7 +51,7 @@ export default function Performance() {
             <table className="tbl"><thead><tr><th>Date</th><th>Section</th><th>Mode</th><th>Score</th></tr></thead><tbody>
               {[...progress.sessions].reverse().slice(0, 30).map((s) => {
                 const c = s.answers.filter((a) => a.correct).length;
-                return <tr key={s.id}><td>{new Date(s.startedAt).toLocaleDateString()} <span className="muted small">{new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td><td>{SECTION_LABEL[s.section]}</td><td>{s.difficultyMode === 'adaptive' ? 'Adaptive' : s.difficultyMode === 'mixed' ? 'Mixed' : DIFFICULTY_LABEL[s.difficultyMode]}</td><td>{c}/{s.answers.length}</td></tr>;
+                return <tr key={s.id}><td>{new Date(s.startedAt).toLocaleDateString()} <span className="muted small">{new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td><td>{SECTION_LABEL[s.section]}</td><td>{s.kind === 'test' ? 'Practice test' : s.kind === 'review' ? 'Spaced review' : s.difficultyMode === 'adaptive' ? 'Adaptive' : s.difficultyMode === 'mixed' ? 'Mixed' : DIFFICULTY_LABEL[s.difficultyMode]}</td><td>{c}/{s.answers.length}</td></tr>;
               })}
             </tbody></table>
           )}

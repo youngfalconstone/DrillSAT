@@ -17,6 +17,8 @@ export interface QuestionIndexEntry {
   preview: string;
   optionsText?: string[];
   page?: number;
+  /** College Board Skills Insight performance score band 1-7 (official items only); see src/shared/score.ts */
+  band?: number;
   source: Source;
   content: boolean;
 }
@@ -78,6 +80,8 @@ export interface SessionRecord {
   questionIds: string[];
   answers: AnswerRecord[];
   review?: AIReview;
+  /** 'test' for a section of a full-length practice test, 'review' for a spaced-review session */
+  kind?: 'practice' | 'test' | 'review';
 }
 
 export interface AIReview {
@@ -96,6 +100,40 @@ export interface ProgressData {
   levels: Record<string, Difficulty>;
   streak: { current: number; best: number; lastDay: string | null };
   reviewFlags: string[]; // question ids marked for review
+  /** spaced review of missed questions (src/shared/review.ts) */
+  review?: Record<string, { id: string; box: number; due: number; added: number; lapses: number }>;
+  /** finished full-length practice tests */
+  tests?: TestRecord[];
+}
+
+export type ModuleLevel = 'base' | 'easier' | 'harder';
+
+export interface TestModuleRecord {
+  section: Section;
+  no: 1 | 2;
+  level: ModuleLevel;
+  questionIds: string[];
+  timeLimitMs: number;
+  timeUsedMs: number;
+}
+
+export interface SectionScore {
+  score: number;
+  low: number;
+  high: number;
+  correct: number;
+  total: number;
+}
+
+export interface TestRecord {
+  id: string;
+  startedAt: number;
+  endedAt: number;
+  sections: Section[];
+  modules: TestModuleRecord[];
+  answers: AnswerRecord[];
+  scores: Partial<Record<Section, SectionScore>>;
+  total?: { score: number; low: number; high: number };
 }
 
 export type LLMProvider = 'anthropic' | 'openai';
@@ -108,6 +146,8 @@ export interface Settings {
   theme: 'light' | 'dark';
   timerEnabled: boolean;
   adaptiveEnabled: boolean;
+  /** compare time per question with the real test pace */
+  pacingFeedback: boolean;
   /** present when a key is stored; never contains the key itself */
   hasLlmKey: boolean;
   hasDesmosKey: boolean;
@@ -122,6 +162,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'light',
   timerEnabled: true,
   adaptiveEnabled: true,
+  pacingFeedback: true,
   hasLlmKey: false,
   hasDesmosKey: false,
   secureStorage: true,

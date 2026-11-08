@@ -2,14 +2,18 @@ import { create } from 'zustand';
 import { normalizeSkill } from '@shared/topics';
 import { api, type AppInfo } from './api';
 import type {
-  AnswerRecord, ChatMessage, Difficulty, ProgressData, Question, QuestionIndexEntry, Section, SessionRecord, Settings,
+  AnswerRecord, ChatMessage, Difficulty, ProgressData, Question, QuestionIndexEntry, Section, SectionScore, SessionRecord, Settings,
+  TestModuleRecord, TestRecord,
 } from '@shared/types';
 import { DEFAULT_SETTINGS } from '@shared/types';
 import { checkAnswer } from '@shared/answerCheck';
 import { computeLevels, nextDifficulty, updateStreak } from '@shared/adaptive';
 import { filterQuestions, shuffle } from '@shared/search';
+import { applyAnswers } from '@shared/review';
+import { combineTotal, estimateFromAnswers } from '@shared/score';
+import { assembleModule, BREAK_MINUTES, MODULE_SPEC, routeModule2, seededRng } from '@shared/testForm';
 
-export type Screen = 'home' | 'bank' | 'practice' | 'performance' | 'study' | 'settings' | 'help';
+export type Screen = 'home' | 'bank' | 'practice' | 'tests' | 'performance' | 'study' | 'settings' | 'help';
 
 export interface SessionConfig {
   section: Section;
@@ -18,6 +22,8 @@ export interface SessionConfig {
   count: number;
   includeAI: boolean;
   onlyUnseen: boolean;
+  /** 'review' = spaced review of missed questions */
+  kind?: 'practice' | 'review';
 }
 
 export interface SessionAnswerState {
@@ -39,6 +45,32 @@ export interface ActiveSession {
   questionStartedAt: number;
   finished: boolean;
   levels: Record<string, Difficulty>; // live adaptive levels for this session
+}
+
+export interface TestAnswerState {
+  answer: string | null;
+  marked: boolean;
+  timeMs: number;
+}
+
+/** A full-length practice test in progress. Saved to active-test.json after every change, so it can resume. */
+export interface ActiveTest {
+  id: string;
+  startedAt: number;
+  sections: Section[];
+  modules: TestModuleRecord[]; // finished modules plus the current one (last)
+  phase: 'module' | 'review' | 'break';
+  idx: number;
+  answers: Record<string, TestAnswerState>;
+  remainingMs: number; // time left in the module or break, measured at clockAt
+  clockAt: number;
+  questionStartedAt: number;
+  used: string[];
+  annotations?: { eliminated: Record<string, string[]>; highlights: Record<string, [number, number][]> };
+}
+
+export function testRemaining(t: ActiveTest, now: number): number {
+  return Math.max(0, t.remainingMs - (now - t.clockAt));
 }
 
 const EMPTY_PROGRESS: ProgressData = { version: 1, sessions: [], levels: {}, streak: { current: 0, best: 0, lastDay: null }, reviewFlags: [] };
@@ -65,6 +97,15 @@ interface State {
   calcStates: Record<string, unknown>;
   qCache: Map<string, Question>;
   toast: { text: string; kind: 'info' | 'error' } | null;
+  // answer tools (per question, kept for the app run; saved with a test in progress)
+  eliminated: Record<string, string[]>;
+  highlights: Record<string, [number, number][]>;
+  /** answer-tool modes, kept while moving between questions */
+  tools: { eliminate: boolean; highlight: boolean };
+  setTools(p: Partial<{ eliminate: boolean; highlight: boolean }>): void;
+  // full-length practice tests
+  test: ActiveTest | null;
+  lastTest: TestRecord | null;
 
   init(): Promise<void>;
   nav(s: Screen): void;
@@ -95,6 +136,17 @@ interface State {
   addAIQuestion(q: Question): Promise<void>;
   removeAIQuestion(id: string): Promise<void>;
   resetProgress(): Promise<void>;
+  toggleEliminated(id: string, letter: string): void;
+  setHighlights(id: string, ranges: [number, number][]): void;
+  startTest(sections: Section[]): Promise<void>;
+  testGoto(i: number): void;
+  testSetAnswer(a: string | null): void;
+  testToggleMark(): void;
+  testShowReview(): void;
+  testSubmitModule(): Promise<void>;
+  testEndBreak(): Promise<void>;
+  testAbandon(): Promise<void>;
+  openTestResult(t: TestRecord | null): void;
 }
 
 function entryOf(q: Question): QuestionIndexEntry {
@@ -126,20 +178,34 @@ export const useStore = create<State>((set, get) => ({
   calcStates: {},
   qCache: new Map(),
   toast: null,
+  eliminated: {},
+  highlights: {},
+  tools: { eliminate: false, highlight: false },
+  setTools(p) {
+    set({ tools: { ...get().tools, ...p } });
+  },
+  test: null,
+  lastTest: null,
 
   async init() {
     try {
-      const [bank, settings, appInfo, progress, aiQuestions, calcStates] = await Promise.all([
+      const [bank, settings, appInfo, progress, aiQuestions, calcStates, savedTest] = await Promise.all([
         api.bank.index(),
         api.settings.get(),
         api.app.info(),
         api.store.get<ProgressData>('progress.json'),
         api.store.get<Question[]>('ai-questions.json'),
         api.store.get<Record<string, unknown>>('calc-state.json'),
+        api.store.get<ActiveTest>('active-test.json'),
       ]);
       const p = progress ?? EMPTY_PROGRESS;
       const indexEntries = bank.questions.map((e) => (e.skill === normalizeSkill(e.skill) ? e : { ...e, skill: normalizeSkill(e.skill) }));
-      set({ index: indexEntries, settings, appInfo, progress: p, aiQuestions: aiQuestions ?? [], calcStates: calcStates ?? {}, ready: true });
+      const now = Date.now();
+      const test = savedTest && savedTest.id ? { ...savedTest, clockAt: now, questionStartedAt: now } : null;
+      set({
+        index: indexEntries, settings, appInfo, progress: p, aiQuestions: aiQuestions ?? [], calcStates: calcStates ?? {}, test,
+        eliminated: test?.annotations?.eliminated ?? {}, highlights: test?.annotations?.highlights ?? {}, ready: true,
+      });
       document.documentElement.dataset.theme = settings.theme;
     } catch (err) {
       set({ loadError: (err as Error).message, ready: true });
@@ -299,6 +365,7 @@ export const useStore = create<State>((set, get) => ({
     const rec: SessionRecord = {
       id: s.id, startedAt: s.startedAt, endedAt: Date.now(), section: s.config.section, skills: s.config.skills,
       difficultyMode: s.config.difficultyMode, questionIds: s.questionIds.filter((id) => s.answers[id]?.submitted), answers,
+      kind: s.config.kind ?? 'practice',
     };
     const p = get().progress;
     const sessions = [...p.sessions, rec];
@@ -307,7 +374,9 @@ export const useStore = create<State>((set, get) => ({
     const levels = { ...computeLevels(allAnswers), ...manual };
     // manual overrides are stored under "manual:<skill>" and win
     for (const [k, v] of Object.entries(manual)) levels[k.slice(7)] = v;
-    const progress: ProgressData = { ...p, sessions, levels, streak: updateStreak(p.streak, Date.now()) };
+    const progress: ProgressData = {
+      ...p, sessions, levels, streak: updateStreak(p.streak, Date.now()), review: applyAnswers(p.review ?? {}, answers),
+    };
     await api.store.set('progress.json', progress);
     set({ progress, session: null, lastSession: rec });
     return rec;
@@ -364,9 +433,205 @@ export const useStore = create<State>((set, get) => ({
 
   async resetProgress() {
     await api.store.set('progress.json', EMPTY_PROGRESS);
-    set({ progress: EMPTY_PROGRESS, lastSession: null });
+    set({ progress: EMPTY_PROGRESS, lastSession: null, lastTest: null });
+  },
+
+  toggleEliminated(id, letter) {
+    const cur = get().eliminated[id] ?? [];
+    const next = cur.includes(letter) ? cur.filter((x) => x !== letter) : [...cur, letter];
+    set({ eliminated: { ...get().eliminated, [id]: next } });
+    if (get().test) void saveTest(get());
+  },
+  setHighlights(id, ranges) {
+    set({ highlights: { ...get().highlights, [id]: ranges } });
+    if (get().test) void saveTest(get());
+  },
+
+  // ---------- full-length practice tests ----------
+
+  async startTest(sections) {
+    const st = get();
+    const seen = new Set(st.progress.sessions.flatMap((x) => x.questionIds));
+    const used = new Set<string>();
+    const section = sections[0];
+    const ids = assembleModule(st.index, section, 1, 'base', used, seen, seededRng(Date.now()));
+    const now = Date.now();
+    const limit = MODULE_SPEC[section].minutes * 60000;
+    const test: ActiveTest = {
+      id: 't' + now.toString(36), startedAt: now, sections,
+      modules: [{ section, no: 1, level: 'base', questionIds: ids, timeLimitMs: limit, timeUsedMs: 0 }],
+      phase: 'module', idx: 0, answers: {}, remainingMs: limit, clockAt: now, questionStartedAt: now, used: [...used],
+    };
+    set({ test, lastTest: null, eliminated: {}, highlights: {}, screen: 'tests' });
+    await saveTest(get());
+  },
+
+  testGoto(i) {
+    const t = get().test;
+    if (!t) return;
+    const mod = t.modules[t.modules.length - 1];
+    if (i < 0 || i >= mod.questionIds.length) return;
+    set({ test: { ...withQuestionTime(t, Date.now()), idx: i, phase: 'module' } });
+    void saveTest(get());
+  },
+
+  testSetAnswer(a) {
+    const t = get().test;
+    if (!t || t.phase !== 'module') return;
+    const id = t.modules[t.modules.length - 1].questionIds[t.idx];
+    const prev = t.answers[id] ?? { answer: null, marked: false, timeMs: 0 };
+    set({ test: { ...t, answers: { ...t.answers, [id]: { ...prev, answer: a } } } });
+    // choosing an answer un-eliminates it, as in Bluebook
+    const el = get().eliminated[id];
+    if (a && el?.includes(a)) set({ eliminated: { ...get().eliminated, [id]: el.filter((x) => x !== a) } });
+    void saveTest(get());
+  },
+
+  testToggleMark() {
+    const t = get().test;
+    if (!t) return;
+    const id = t.modules[t.modules.length - 1].questionIds[t.idx];
+    const prev = t.answers[id] ?? { answer: null, marked: false, timeMs: 0 };
+    set({ test: { ...t, answers: { ...t.answers, [id]: { ...prev, marked: !prev.marked } } } });
+    void saveTest(get());
+  },
+
+  testShowReview() {
+    const t = get().test;
+    if (!t) return;
+    set({ test: { ...withQuestionTime(t, Date.now()), phase: 'review' } });
+    void saveTest(get());
+  },
+
+  async testSubmitModule() {
+    const st = get();
+    let t = st.test;
+    if (!t || t.phase === 'break') return;
+    const now = Date.now();
+    t = withQuestionTime(t, now);
+    const mods = [...t.modules];
+    const cur = { ...mods[mods.length - 1] };
+    cur.timeUsedMs = Math.min(cur.timeLimitMs, cur.timeLimitMs - testRemaining(t, now));
+    mods[mods.length - 1] = cur;
+    const used = new Set(t.used);
+    for (const id of cur.questionIds) used.add(id);
+    if (cur.no === 1) {
+      // route module 2 from module 1 performance, with the same score model as the results
+      const scored = await Promise.all(cur.questionIds.map(async (id) => {
+        const q = await st.getQuestion(id);
+        const e = st.index.find((x) => x.id === id);
+        return { band: e?.band ?? 4, type: q.type, correct: checkAnswer(q, t!.answers[id]?.answer ?? null) };
+      }));
+      const level = routeModule2(cur.section, scored);
+      const seen = new Set(st.progress.sessions.flatMap((x) => x.questionIds));
+      const ids = assembleModule(st.index, cur.section, 2, level, used, seen, seededRng(now));
+      const limit = MODULE_SPEC[cur.section].minutes * 60000;
+      mods.push({ section: cur.section, no: 2, level, questionIds: ids, timeLimitMs: limit, timeUsedMs: 0 });
+      set({ test: { ...t, modules: mods, phase: 'module', idx: 0, remainingMs: limit, clockAt: now, questionStartedAt: now, used: [...used] } });
+      await saveTest(get());
+      return;
+    }
+    const next = t.sections[t.sections.indexOf(cur.section) + 1];
+    if (next) {
+      set({ test: { ...t, modules: mods, phase: 'break', idx: 0, remainingMs: BREAK_MINUTES * 60000, clockAt: now, used: [...used] } });
+      await saveTest(get());
+      return;
+    }
+    await finishTest({ ...t, modules: mods });
+  },
+
+  async testEndBreak() {
+    const st = get();
+    const t = st.test;
+    if (!t || t.phase !== 'break') return;
+    const done = t.modules[t.modules.length - 1].section;
+    const section = t.sections[t.sections.indexOf(done) + 1];
+    const used = new Set(t.used);
+    const seen = new Set(st.progress.sessions.flatMap((x) => x.questionIds));
+    const ids = assembleModule(st.index, section, 1, 'base', used, seen, seededRng(Date.now()));
+    const now = Date.now();
+    const limit = MODULE_SPEC[section].minutes * 60000;
+    set({ test: { ...t, modules: [...t.modules, { section, no: 1, level: 'base', questionIds: ids, timeLimitMs: limit, timeUsedMs: 0 }], phase: 'module', idx: 0, remainingMs: limit, clockAt: now, questionStartedAt: now, used: [...used] } });
+    await saveTest(get());
+  },
+
+  async testAbandon() {
+    set({ test: null, eliminated: {}, highlights: {} });
+    await api.store.set('active-test.json', null);
+  },
+
+  openTestResult(t) {
+    set({ lastTest: t, screen: 'tests' });
   },
 }));
+
+/** Add the time spent on the current test question since it was shown. */
+function withQuestionTime(t: ActiveTest, now: number): ActiveTest {
+  if (t.phase !== 'module') return { ...t, questionStartedAt: now };
+  const mod = t.modules[t.modules.length - 1];
+  const id = mod.questionIds[t.idx];
+  if (!id) return t;
+  const prev = t.answers[id] ?? { answer: null, marked: false, timeMs: 0 };
+  return { ...t, answers: { ...t.answers, [id]: { ...prev, timeMs: prev.timeMs + Math.max(0, now - t.questionStartedAt) } }, questionStartedAt: now };
+}
+
+async function saveTest(st: Pick<State, 'test' | 'eliminated' | 'highlights'>) {
+  const t = st.test;
+  if (!t) return;
+  const now = Date.now();
+  const ids = new Set(t.modules.flatMap((m) => m.questionIds));
+  const pick = <T,>(m: Record<string, T>) => Object.fromEntries(Object.entries(m).filter(([k]) => ids.has(k)));
+  // snapshot the clock so a restart resumes with the time that was left
+  const snap: ActiveTest = { ...t, remainingMs: testRemaining(t, now), clockAt: now, annotations: { eliminated: pick(st.eliminated), highlights: pick(st.highlights) } };
+  await api.store.set('active-test.json', snap);
+}
+
+/** Score the test, save it to progress (tests, per-section sessions, levels, streak, spaced review). */
+async function finishTest(t: ActiveTest) {
+  const st = useStore.getState();
+  const endedAt = Date.now();
+  const byId = new Map(st.index.map((e) => [e.id, e]));
+  const answers: AnswerRecord[] = [];
+  for (const m of t.modules) {
+    for (const id of m.questionIds) {
+      const q = await st.getQuestion(id);
+      const a = t.answers[id];
+      answers.push({
+        questionId: id, section: m.section, domain: q.domain, skill: q.skill, difficulty: q.difficulty, type: q.type, source: 'official',
+        answer: a?.answer ?? null, correct: checkAnswer(q, a?.answer ?? null), timeMs: a?.timeMs ?? 0, marked: !!a?.marked, at: endedAt,
+      });
+    }
+  }
+  const scores: Partial<Record<Section, SectionScore>> = {};
+  const est: Partial<Record<Section, ReturnType<typeof estimateFromAnswers>>> = {};
+  for (const section of t.sections) {
+    const list = answers.filter((a) => a.section === section);
+    const e = estimateFromAnswers(section, list.map((a) => ({ band: byId.get(a.questionId)?.band ?? 4, type: a.type, correct: a.correct })));
+    est[section] = e;
+    scores[section] = { score: e.score, low: e.low, high: e.high, correct: list.filter((a) => a.correct).length, total: list.length };
+  }
+  const total = est.rw && est.math ? combineTotal(est.rw, est.math) : undefined;
+  const rec: TestRecord = { id: t.id, startedAt: t.startedAt, endedAt, sections: t.sections, modules: t.modules, answers, scores, total };
+
+  const p = st.progress;
+  const sectionSessions: SessionRecord[] = t.sections.map((section) => {
+    const list = answers.filter((a) => a.section === section);
+    return {
+      id: `${t.id}-${section}`, startedAt: t.startedAt, endedAt, section, skills: [], difficultyMode: 'mixed',
+      questionIds: list.map((a) => a.questionId), answers: list, kind: 'test',
+    };
+  });
+  const sessions = [...p.sessions, ...sectionSessions];
+  const manual = Object.fromEntries(Object.entries(p.levels).filter(([k]) => k.startsWith('manual:')));
+  const levels = { ...computeLevels(sessions.flatMap((x) => x.answers)), ...manual };
+  for (const [k, v] of Object.entries(manual)) levels[k.slice(7)] = v;
+  const progress: ProgressData = {
+    ...p, sessions, levels, streak: updateStreak(p.streak, endedAt), review: applyAnswers(p.review ?? {}, answers), tests: [...(p.tests ?? []), rec],
+  };
+  await api.store.set('progress.json', progress);
+  await api.store.set('active-test.json', null);
+  useStore.setState({ progress, test: null, lastTest: rec, eliminated: {}, highlights: {} });
+}
 
 // ---------- helpers ----------
 

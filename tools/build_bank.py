@@ -9,6 +9,9 @@ Usage: python tools/build_bank.py data/pdf_math.json data/pdf_rw.json data/raw d
 import json, os, re, sys, html as htmlmod
 from collections import Counter
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from clean_text import clean_text  # noqa: E402
+
 DIFF = {"Easy": "E", "Medium": "M", "Hard": "H", "E": "E", "M": "M", "H": "H"}
 
 WORD_NUM = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
@@ -181,11 +184,18 @@ def main():
             both = q["stem"] + q["stimulus"]
             entry["hasFigure"] = ("<svg" in both) or ("<img" in both)
             entry["hasTable"] = "<table" in both
-            text = strip_html(q["stimulus"] + " " + q["stem"])
+            # readable math (not spoken alt text) and no figure descriptions; see tools/clean_text.py
+            text = clean_text(q["stimulus"] + " " + q["stem"])
             entry["text"] = text
             entry["preview"] = text[:160]
             if q["type"] == "mcq":
-                entry["optionsText"] = [strip_html(o["html"])[:80] for o in q["options"]]
+                entry["optionsText"] = [clean_text(o["html"])[:80] for o in q["options"]]
+            # College Board Skills Insight performance score band (1-7), assigned by RP67 mapping
+            band = meta.get("score_band_range_cd")
+            if isinstance(band, int) and 1 <= band <= 7:
+                entry["band"] = band
+            else:
+                problems["no band"] += 1
             q.update({"id": qid, "section": section, "domain": rec["domain"], "skill": rec["skill"],
                       "difficulty": entry["difficulty"], "source": "official"})
             with open(os.path.join(out_dir, "q", qid + ".json"), "w", encoding="utf-8") as f:

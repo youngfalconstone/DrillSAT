@@ -13,6 +13,17 @@ let page: Page;
 const userData = fs.mkdtempSync(path.join(os.tmpdir(), 'drillsat-scroll-'));
 
 const scrollTop = () => page.evaluate(() => (document.querySelector('main.page') as HTMLElement).scrollTop);
+/** Wait until any smooth (keyboard/wheel) scroll animation has finished, so a programmatic position sticks. */
+async function settle() {
+  let last = -1;
+  let same = 0;
+  for (let i = 0; i < 40 && same < 3; i++) {
+    const t = await scrollTop();
+    same = t === last ? same + 1 : 0;
+    last = t;
+    await page.waitForTimeout(100);
+  }
+}
 const maxScroll = () => page.evaluate(() => {
   const el = document.querySelector('main.page') as HTMLElement;
   return el.scrollHeight - el.clientHeight;
@@ -66,11 +77,13 @@ test('wheel, keyboard and scrollbar all scroll the question list', async () => {
   await page.keyboard.press('PageUp');
   await expect.poll(scrollTop).toBeLessThan(afterSpace);
   // scrollbar / programmatic
+  await settle();
   await page.evaluate(() => ((document.querySelector('main.page') as HTMLElement).scrollTop = 900));
   await expect.poll(scrollTop).toBe(900);
 });
 
 test('list scroll position survives opening a question and coming back; detail starts at top', async () => {
+  await settle();
   await page.evaluate(() => ((document.querySelector('main.page') as HTMLElement).scrollTop = 700));
   await expect.poll(scrollTop).toBe(700);
   const item = page.locator('.qlist .qitem').nth(8);

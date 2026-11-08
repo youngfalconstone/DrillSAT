@@ -68,7 +68,10 @@ A. ... B. ... C. ... D. ...
 | `hasFigure`, `hasTable` | boolean | from the HTML (`<svg>`/`<img>`, `<table>`) |
 | `text` | string | plain-text stimulus + stem (MathML replaced by its `alttext`) — used for search |
 | `preview` | string | first 160 chars of `text` |
+| `band` | number | College Board Skills Insight performance score band 1-7 (`score_band_range_cd` from the question-bank API); Easy = 1-3, Medium = 4-5, Hard = 6-7. Used by the score estimate |
 | `optionsText` | string[] | plain-text choices (mcq) |
+
+`text`, `preview` and `optionsText` come from `tools/clean_text.py`: MathML is converted structurally to compact math (`(12x + 28)/4 − s/13`), not to its spoken `alttext`; math images in disclosed items use a speech-to-symbols pass on their alt text; figures and screen-reader long descriptions are left out.
 | `page` | number | first page of the question in the source PDF |
 | `source` | `"official"` | AI-generated questions use `"ai"` and live in user data, not here |
 | `content` | boolean | full content available in `q/<id>.json` (true for all 3,770) |

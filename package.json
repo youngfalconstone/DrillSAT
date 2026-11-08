@@ -1,6 +1,6 @@
 {
   "name": "drillsat",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Desktop SAT practice app with the official question bank, AI tutor and a built-in Desmos calculator",
   "main": "dist-electron/main.js",
   "private": true,
@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dist": "vite build && electron-builder --win",
-    "dist:portable": "vite build && electron-builder --win portable",
+    "dist": "vite build && electron-builder --win --publish never",
+    "dist:portable": "vite build && electron-builder --win portable --publish never",
     "bank:parse": "python tools/parse_pdf.py \"%MATH_PDF%\" data/pdf_math.json && python tools/parse_pdf.py \"%RW_PDF%\" data/pdf_rw.json",
     "bank:fetch": "python tools/fetch_bank.py data/math_list.json data/rw_list.json data/raw",
     "bank:build": "python tools/build_bank.py data/pdf_math.json data/pdf_rw.json data/raw data/bank"
@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
+    "electron-updater": "6.8.11",
     "katex": "^0.19.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

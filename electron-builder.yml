@@ -27,3 +27,10 @@ nsis:
   perMachine: false
 portable:
   artifactName: "DrillSAT-${version}-portable.exe"
+# Auto-update feed (electron-updater): generates app-update.yml in the app and latest.yml next to the installer.
+# Releases are uploaded with `gh release create`; electron-builder never publishes by itself (--publish never).
+publish:
+  provider: github
+  owner: youngfalconstone
+  repo: DrillSAT
+  releaseType: release

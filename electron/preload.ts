@@ -23,6 +23,16 @@ const api = {
     info: () => ipcRenderer.invoke('app:info'),
     openExternal: (url: string) => ipcRenderer.invoke('app:openExternal', url),
   },
+  update: {
+    get: () => ipcRenderer.invoke('update:get'),
+    check: () => ipcRenderer.invoke('update:check'),
+    install: () => ipcRenderer.invoke('update:install'),
+    onState: (cb: (s: unknown) => void) => {
+      const h = (_e: unknown, st: unknown) => cb(st);
+      ipcRenderer.on('update:state', h);
+      return () => ipcRenderer.removeListener('update:state', h);
+    },
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

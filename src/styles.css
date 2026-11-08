@@ -468,3 +468,54 @@ pre.card code { background: none; padding: 0; }
 .check.topic { padding-left: 24px; color: var(--text-2); }
 .check.topic .badge { margin-left: auto; }
 .checks:has(> .topics) { max-height: none; overflow: visible; }
+
+/* ---------- answer tools ---------- */
+.toolbar { display: inline-flex; gap: var(--s-2); }
+.choice-row { display: flex; align-items: center; gap: var(--s-2); }
+.choice-row > .choice { flex: 1; min-width: 0; }
+.strike-btn { flex: none; width: 44px; height: 32px; border-radius: 999px; border: 1px solid var(--border-2); background: var(--card); color: var(--text-2); font-size: var(--fs-xs); font-weight: 600; }
+.strike-btn:hover { border-color: var(--muted); }
+.strike-btn .strike-letter { text-decoration: line-through; text-decoration-thickness: 2px; }
+.strike-btn.on { background: var(--bg); }
+.choice.struck .choice-text, .choice.struck .letter-text { text-decoration: line-through; text-decoration-thickness: 2px; }
+.choice.struck { opacity: 0.55; }
+::highlight(drillsat-hl) { background-color: #fde68a; color: #111827; }
+.qcard.hl-on .qtext { cursor: text; }
+.qcard.hl-on .qtext::selection, .qcard.hl-on .qtext *::selection { background: #fcd34d; }
+.refsheet { width: min(640px, 92vw); }
+.refgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--s-4) var(--s-5); }
+.refitem { display: flex; flex-direction: column; gap: var(--s-1); }
+.refnotes { margin-top: var(--s-5); color: var(--text-2); }
+
+/* ---------- pacing ---------- */
+.pace { margin-top: var(--s-3); color: var(--muted); }
+.pace.slow { color: var(--amber); }
+.pace-card { margin-top: var(--s-5); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--s-4) var(--s-5); font-size: var(--fs-sm); color: var(--text-2); }
+.pace-card.slow { border-color: var(--amber-bg); background: color-mix(in srgb, var(--amber-bg) 40%, var(--card)); }
+
+/* ---------- practice tests ---------- */
+.testbar .timer.warn { color: var(--red); }
+.linkbtn { background: none; border: 0; padding: 0 0 0 var(--s-2); color: var(--link); font-size: var(--fs-xs); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.test-break { text-align: center; max-width: 560px; margin: 0 auto; }
+.big-clock { font-size: 48px; font-weight: 700; font-variant-numeric: tabular-nums; margin: var(--s-4) 0; }
+.qgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: var(--s-2); }
+.qcell { position: relative; height: 40px; border-radius: var(--radius-sm); border: 1px dashed var(--border-2); background: var(--card); color: var(--text); font-weight: 600; font-size: var(--fs-sm); }
+.qcell.answered { border-style: solid; background: var(--blue-light); color: var(--blue-text); border-color: var(--blue-light); }
+.qcell.current { box-shadow: inset 0 0 0 2px var(--blue); }
+.qcell-flag { position: absolute; top: -6px; right: -4px; width: 14px; height: 14px; color: var(--red); }
+.qcell.result { border-style: solid; }
+.qcell.result.ok { background: var(--green-bg); color: var(--green); border-color: var(--green-bg); }
+.qcell.result.bad { background: var(--red-bg); color: var(--red); border-color: var(--red-bg); }
+.qcell.result.skip { background: var(--bg); color: var(--muted); }
+
+/* ---------- estimated score ---------- */
+.score-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-5); }
+.score-cell { display: flex; flex-direction: column; gap: 2px; }
+.score-v { font-size: 28px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.explainer { margin-top: var(--s-5); color: var(--text-2); }
+.explainer summary { cursor: pointer; color: var(--link); font-weight: 600; }
+.explainer p { margin: var(--s-3) 0 0; max-width: var(--measure); }
+.scores + .explainer { margin-top: var(--s-4); }
+
+/* ---------- update banner ---------- */
+.update-banner { position: fixed; right: 24px; bottom: 24px; z-index: 45; display: flex; align-items: center; gap: var(--s-3); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: var(--s-3) var(--s-4); font-size: var(--fs-sm); animation: fade-up var(--dur-2) var(--ease) both; }

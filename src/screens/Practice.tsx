@@ -10,6 +10,7 @@ import { complete, AIRequestError } from '../api';
 import QuestionView from '../components/QuestionView';
 import { QuestionSkeleton } from '../components/Skeleton';
 import { ClockIcon, SparkIcon } from '../components/icons';
+import { fmtSeconds, pacingSummary } from '@shared/pacing';
 
 function fmt(ms: number): string {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -113,7 +114,7 @@ function Player() {
   const atEnd = s.idx + 1 >= s.questionIds.length && s.questionIds.length >= total;
   const sessionMs = now - s.startedAt;
   const qMs = a?.submitted ? a.timeMs : (a?.timeMs ?? 0) + (now - s.questionStartedAt);
-  const modeLabel = s.config.difficultyMode === 'adaptive' ? `Adaptive · ${q ? DIFFICULTY_LABEL[q.difficulty] : ''}` : s.config.difficultyMode === 'mixed' ? 'Mixed difficulty' : DIFFICULTY_LABEL[s.config.difficultyMode];
+  const modeLabel = s.config.kind === 'review' ? 'Spaced review' : s.config.difficultyMode === 'adaptive' ? `Adaptive · ${q ? DIFFICULTY_LABEL[q.difficulty] : ''}` : s.config.difficultyMode === 'mixed' ? 'Mixed difficulty' : DIFFICULTY_LABEL[s.config.difficultyMode];
 
   return (
     <div>
@@ -129,7 +130,7 @@ function Player() {
         <div className="qenter" key={q.id}>
           <QuestionView
             question={q} answer={a?.answer ?? null} submitted={!!a?.submitted} marked={!!a?.marked}
-            onAnswer={sessionSetAnswer} onSubmit={() => void sessionSubmit()} onToggleMark={sessionToggleMark}
+            onAnswer={sessionSetAnswer} onSubmit={() => void sessionSubmit()} onToggleMark={sessionToggleMark} timeMs={a?.submitted ? a.timeMs : undefined}
             onPrev={() => sessionGoto(s.idx - 1)} prevDisabled={s.idx === 0}
             onNext={atEnd ? () => setConfirmEnd(true) : () => void sessionNext()} nextLabel={atEnd ? 'Finish' : 'Next'}
           />
@@ -197,6 +198,13 @@ function Summary({ rec }: { rec: SessionRecord }) {
         <div className="stat"><div className="v">{fmt(totalMs / rec.answers.length)}</div><div className="l">Average time per question</div></div>
         <div className="stat"><div className="v">{rec.answers.filter((a) => a.marked).length}</div><div className="l">Marked for review</div></div>
       </div>
+      {settings.pacingFeedback && pacingSummary(rec.answers).map((p) => (
+        <div key={p.section} className={'pace-card' + (p.verdict === 'slow' ? ' slow' : '')} data-testid="pace-summary">
+          <strong>Pacing ({SECTION_LABEL[p.section]}):</strong> {fmtSeconds(p.avgMs)} per question on average; the real test allows about {fmtSeconds(p.targetMs)}.
+          {p.verdict === 'slow' ? ' You are slower than test pace.' : p.verdict === 'fast' ? ' You are well ahead of test pace; check your work.' : ' You are on pace.'}
+          {p.slow > 0 && ` ${p.slow} question${p.slow === 1 ? '' : 's'} took more than 1.5× the pace.`}
+        </div>
+      ))}
       <div className="grid2" style={{ marginTop: 32 }}>
         <div className="card">
           <h2>By topic</h2>
