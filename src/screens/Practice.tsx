@@ -136,7 +136,7 @@ function Player() {
     <div>
       <div className="sessionbar">
         <span className="count"><PerfIcon /> Question {s.idx + 1} of {total}</span>
-        <div className="progress"><div style={{ width: `${Math.round((100 * answered) / total)}%` }} /></div>
+        <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={answered} aria-label="Questions answered"><div style={{ width: '100%', transform: `scaleX(${answered / total})` }} /></div>
         {settings.timerEnabled && <span className="timer" title="This question / whole session"><ClockIcon /> {fmt(qMs)} <span className="muted">/ {fmt(sessionMs)}</span></span>}
         <span className="pill blue">{SECTION_LABEL[s.config.section]}: {modeLabel}</span>
         <button className="btn sm" onClick={() => setConfirmEnd(true)}>End session</button>

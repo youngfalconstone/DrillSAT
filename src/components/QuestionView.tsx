@@ -7,7 +7,7 @@ import { complete, AIRequestError } from '../api';
 import { useStore } from '../store';
 import QuestionHtml from './QuestionHtml';
 import DesmosPanel from './DesmosPanel';
-import { BookmarkIcon, CalcIcon, ChevronLeft, ChevronRight, SparkIcon } from './icons';
+import { BookmarkIcon, CalcIcon, CheckIcon, ChevronLeft, ChevronRight, CloseIcon, SparkIcon } from './icons';
 
 export interface QuestionViewProps {
   question: Question;
@@ -146,10 +146,19 @@ export default function QuestionView(p: QuestionViewProps) {
                   const cls = p.submitted
                     ? q.correct!.includes(o.id) ? ' correct' : sel ? ' wrong' : ''
                     : sel ? ' selected' : '';
+                  const isKey = p.submitted && q.correct!.includes(o.id);
+                  const state = isKey
+                    ? { icon: <CheckIcon />, label: sel ? 'Correct' : 'Correct answer' }
+                    : p.submitted && sel ? { icon: <CloseIcon />, label: 'Your answer' }
+                    : sel ? { icon: <CheckIcon />, label: 'Selected' } : null;
                   return (
-                    <button key={o.id} className={'choice' + cls} disabled={p.submitted} onClick={() => p.onAnswer(sel ? null : o.id)}>
-                      <span className="letter">{o.id}</span>
+                    <button
+                      key={o.id} className={'choice' + cls} disabled={p.submitted} onClick={() => p.onAnswer(sel ? null : o.id)}
+                      aria-pressed={!p.submitted ? sel : undefined} aria-label={`Choice ${o.id}${state ? `, ${state.label}` : ''}`}
+                    >
+                      <span className="letter" aria-hidden="true">{o.id}</span>
                       <QuestionHtml html={o.html} latex={q.source === 'ai'} />
+                      {state && <span className="state">{state.icon} {state.label}</span>}
                     </button>
                   );
                 })}
@@ -169,8 +178,9 @@ export default function QuestionView(p: QuestionViewProps) {
             )}
 
             {p.submitted && (
-              <div className={'result ' + (isCorrect ? 'ok' : 'bad')}>
-                {isCorrect ? 'Correct!' : `Incorrect. Correct answer: ${correctAnswerLabel(q)}`}
+              <div className={'result ' + (isCorrect ? 'ok' : 'bad')} role="status">
+                {isCorrect ? <CheckIcon /> : <CloseIcon />}
+                <span>{isCorrect ? 'Correct!' : `Incorrect. Correct answer: ${correctAnswerLabel(q)}`}</span>
               </div>
             )}
 

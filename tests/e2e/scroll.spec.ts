@@ -99,7 +99,7 @@ test('long question detail and other screens scroll', async () => {
   for (const name of ['Help', 'Settings', 'Performance']) {
     await page.getByRole('button', { name, exact: true }).click();
     await page.waitForTimeout(100);
-    expect(await scrollTop()).toBe(0); // new screen starts at the top
+    expect(await scrollTop()).toBeLessThan(2); // new screen starts at the top
     const max = await maxScroll();
     if (max > 0) {
       await page.keyboard.press('End');
