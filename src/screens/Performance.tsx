@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { liveStreak, skillStats } from '@shared/adaptive';
 import type { Difficulty } from '@shared/types';
 import { topicLabel } from '@shared/topics';
-import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
+import { modeLabel, DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
 import { FlameIcon } from '../components/icons';
 import { ScoreCard } from '../components/ScoreCard';
 
@@ -51,7 +51,7 @@ export default function Performance() {
             <table className="tbl"><thead><tr><th>Date</th><th>Section</th><th>Mode</th><th>Score</th></tr></thead><tbody>
               {[...progress.sessions].reverse().slice(0, 30).map((s) => {
                 const c = s.answers.filter((a) => a.correct).length;
-                return <tr key={s.id}><td>{new Date(s.startedAt).toLocaleDateString()} <span className="muted small">{new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td><td>{SECTION_LABEL[s.section]}</td><td>{s.kind === 'test' ? 'Practice test' : s.kind === 'review' ? 'Spaced review' : s.difficultyMode === 'adaptive' ? 'Adaptive' : s.difficultyMode === 'mixed' ? 'Mixed' : DIFFICULTY_LABEL[s.difficultyMode]}</td><td>{c}/{s.answers.length}</td></tr>;
+                return <tr key={s.id}><td>{new Date(s.startedAt).toLocaleDateString()} <span className="muted small">{new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td><td>{SECTION_LABEL[s.section]}</td><td>{s.kind === 'test' ? 'Practice test' : s.kind === 'review' ? 'Spaced review' : modeLabel(s.difficultyMode)}</td><td>{c}/{s.answers.length}</td></tr>;
               })}
             </tbody></table>
           )}
@@ -60,12 +60,11 @@ export default function Performance() {
 
       <div className="card" style={{ marginTop: 32 }}>
         <h2>Accuracy by topic &amp; adaptive level</h2>
-        <div className="muted small mb">The adaptive level is the difficulty a new adaptive session starts at for that topic. Set it manually to override; choose “Auto” to go back to the computed level.</div>
+        <div className="muted small mb">Adaptive sessions follow your estimated score in each section. To fix a topic at one difficulty instead, choose it here; “Auto” goes back to following your score.</div>
         <table className="tbl"><thead><tr><th>Skill</th><th>Accuracy</th><th>E / M / H</th><th>Avg time</th><th>Level</th></tr></thead><tbody>
           {allSkills.map((e) => {
             const st = stats.find((s) => s.skill === e.skill);
             const manual = progress.levels['manual:' + e.skill];
-            const level = progress.levels[e.skill];
             return (
               <tr key={e.skill}>
                 <td title={e.skill}>{topicLabel(e.skill)}<div className="muted small">{SECTION_LABEL[e.section]} · {e.domain}</div></td>
@@ -74,7 +73,7 @@ export default function Performance() {
                 <td>{st ? Math.round(st.avgTimeMs / 1000) + 's' : '—'}</td>
                 <td>
                   <select className="select" style={{ minHeight: 32, padding: '4px 8px', width: 130 }} value={manual ?? 'auto'} onChange={(ev) => setLevel(e.skill, ev.target.value === 'auto' ? null : (ev.target.value as Difficulty))}>
-                    <option value="auto">Auto ({level ? DIFFICULTY_LABEL[level] : 'Medium'})</option>
+                    <option value="auto">Auto</option>
                     <option value="E">Easy</option><option value="M">Medium</option><option value="H">Hard</option>
                   </select>
                 </td>

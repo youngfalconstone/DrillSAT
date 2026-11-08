@@ -169,3 +169,52 @@ export function estimateFromHistory(
 export function isEstimate(x: ScoreEstimate | { needed: number }): x is ScoreEstimate {
   return 'score' in x;
 }
+
+// ---------- adaptive question selection ----------
+
+/** Success rate adaptive practice aims for: hard enough to stretch, easy enough to learn from. */
+export const TARGET_P = 0.6;
+
+/**
+ * Current ability for adaptive practice: the same model and answer rules as the estimate (first attempt at each
+ * official question, most recent RECENT_ITEMS) but with no minimum, so it moves from the very first answer.
+ * With no answers it is the prior mean (550, the middle of Medium).
+ */
+export function currentAbility(section: Section, answers: AnswerLike[], bandOf: (id: string) => ItemParams | undefined): number {
+  const first = new Map<string, AnswerLike>();
+  for (const a of [...answers].sort((x, y) => x.at - y.at)) {
+    if (a.section !== section || a.source === 'ai' || first.has(a.questionId)) continue;
+    first.set(a.questionId, a);
+  }
+  const usable = [...first.values()]
+    .map((a) => ({ a, p: bandOf(a.questionId) }))
+    .filter((x): x is { a: AnswerLike; p: ItemParams } => !!x.p)
+    .sort((x, y) => y.a.at - x.a.at)
+    .slice(0, RECENT_ITEMS);
+  const post = posterior(section, usable.map(({ a, p }) => ({ ...p, correct: a.correct })));
+  return post.reduce((acc, p, i) => acc + p * GRID[i], 0);
+}
+
+/** The band whose questions this student answers correctly closest to TARGET_P of the time. */
+export function targetBand(section: Section, ability: number): number {
+  let best = 1;
+  let bestGap = Infinity;
+  for (let k = 1; k <= 7; k++) {
+    const gap = Math.abs(pCorrect(section, { band: k, type: 'mcq' }, ability) - TARGET_P);
+    if (gap < bestGap) {
+      bestGap = gap;
+      best = k;
+    }
+  }
+  return best;
+}
+
+/** Bands to try for a target, nearest first (ties prefer the harder band). */
+export function bandOrder(target: number): number[] {
+  const out = [target];
+  for (let d = 1; d < 7; d++) {
+    if (target + d <= 7) out.push(target + d);
+    if (target - d >= 1) out.push(target - d);
+  }
+  return out;
+}

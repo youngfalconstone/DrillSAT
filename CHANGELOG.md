@@ -3,6 +3,21 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.6.1] - 2026-11-08
+
+### Fixed
+- **Adaptive practice stayed on Medium.** Levels moved per topic after four answers in that topic, but a
+  10-question session touches each of ~19 topics about once, so in practice every adaptive question (Quick
+  sessions, Practice default, Drill, Practice this skill) was Medium no matter how well you did. Adaptive now
+  picks from the College Board score band you answer correctly about 60% of the time at your current
+  estimated score (same model as the score estimate), updated after every answer. Answering everything right
+  reaches Hard by the third question and the top score band by the fifth; misses bring it down to Easy.
+  Manual per-topic levels in Performance still apply.
+
+### Added
+- **Hardest only** difficulty: College Board's score band 7 (aimed at 680–800 scorers). College Board "Hard"
+  covers bands 6 and 7, and band 6 can feel easy to strong students; the setup screen now says so.
+
 ## [1.6.0] - 2026-11-08
 
 ### Added

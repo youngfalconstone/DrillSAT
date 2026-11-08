@@ -129,7 +129,7 @@ export default function QuestionView(p: QuestionViewProps) {
     <div className="calcwrap">
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className={'qlayout' + (showCalc ? ' wide' : '') + (stacked ? ' stacked' : '')}>
-          <div className={'card qcard' + (tools.highlight ? ' hl-on' : '')}>
+          <div className={'card qcard' + (tools.highlight ? ' hl-on' : '')} data-qid={q.id}>
             <div className="qmeta">
               <span className="row" style={{ gap: 8 }}>
                 {test ? <span className="tag">{p.testLabel ?? SECTION_LABEL[q.section]}</span> : (

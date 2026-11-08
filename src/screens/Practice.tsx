@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, type SessionConfig } from '../store';
-import type { Difficulty, Question, Section, SessionRecord } from '@shared/types';
-import { DIFFICULTY_LABEL, SECTION_LABEL } from '@shared/types';
+import type { DifficultyMode, Question, Section, SessionRecord } from '@shared/types';
+import { DIFFICULTY_LABEL, SECTION_LABEL, modeLabel as modeName } from '@shared/types';
 import { topicsByDomain } from '@shared/topics';
 import { TopicPicker } from '../components/TopicPicker';
 import { skillStats } from '@shared/adaptive';
@@ -28,10 +28,10 @@ export default function Practice() {
 
 // ---------------- setup ----------------
 function Setup() {
-  const { index, aiQuestions, startSession, settings, progress } = useStore();
+  const { index, aiQuestions, startSession, settings } = useStore();
   const [section, setSection] = useState<Section>('math');
   const [picked, setPicked] = useState<string[]>([]);
-  const [diff, setDiff] = useState<Difficulty | 'adaptive' | 'mixed'>(settings.adaptiveEnabled ? 'adaptive' : 'mixed');
+  const [diff, setDiff] = useState<DifficultyMode>(settings.adaptiveEnabled ? 'adaptive' : 'mixed');
   const [count, setCount] = useState(10);
   const [includeAI, setIncludeAI] = useState(true);
   const [onlyUnseen, setOnlyUnseen] = useState(true);
@@ -56,9 +56,9 @@ function Setup() {
         </label>
         <label className="field mt"><span>Difficulty</span>
           <select className="select" value={diff} onChange={(e) => setDiff(e.target.value as typeof diff)}>
-            <option value="adaptive">Adaptive (adjusts per topic as you go)</option>
+            <option value="adaptive">Adaptive (follows your level after every answer)</option>
             <option value="mixed">Mixed</option>
-            <option value="E">Easy only</option><option value="M">Medium only</option><option value="H">Hard only</option>
+            <option value="E">Easy only</option><option value="M">Medium only</option><option value="H">Hard only</option><option value="hardest">Hardest only (top score band)</option>
           </select>
         </label>
         <label className="field mt"><span>Number of questions: {count}</span>
@@ -68,19 +68,15 @@ function Setup() {
         <div className="mt"><label className="switch"><input type="checkbox" checked={onlyUnseen} onChange={(e) => setOnlyUnseen(e.target.checked)} /> Prefer questions I haven’t seen</label></div>
         <div className="mt muted small">{available.toLocaleString()} questions available · timer {settings.timerEnabled ? 'on' : 'off'} (Settings)</div>
         <button className="btn primary block" style={{ marginTop: 24 }} onClick={go} disabled={!available}>Start session</button>
-        {diff === 'adaptive' && (
-          <div className="mt muted small">
-            Each topic starts at its current level (badge next to the topic, default Medium) and moves up or down from your answers.
-          </div>
-        )}
+        {diff === 'adaptive' && <div className="mt muted small">Questions come from the College Board score band you answer correctly about 60% of the time, based on your estimated score. It moves after every answer, so getting questions right brings harder ones quickly.</div>}
+        {(diff === 'H' || diff === 'hardest') && <div className="mt muted small">{diff === 'H' ? 'College Board "Hard" spans score bands 6 and 7. For the very hardest questions choose Hardest only.' : 'Only College Board score band 7, the band aimed at 680–800 scorers.'}</div>}
       </div>
       <div className="card">
         <div className="card-head">
           <h2>Topics</h2>
           {picked.length > 0 ? <button className="btn sm" onClick={() => setPicked([])}>Clear ({picked.length})</button> : <span className="muted small">All topics</span>}
         </div>
-        <TopicPicker groups={groups} value={picked} onChange={setPicked}
-          badge={(s) => diff === 'adaptive' && progress.levels[s] ? <span className={'badge ' + progress.levels[s]}>{progress.levels[s]}</span> : null} />
+        <TopicPicker groups={groups} value={picked} onChange={setPicked} />
       </div>
     </div>
   );
@@ -114,7 +110,7 @@ function Player() {
   const atEnd = s.idx + 1 >= s.questionIds.length && s.questionIds.length >= total;
   const sessionMs = now - s.startedAt;
   const qMs = a?.submitted ? a.timeMs : (a?.timeMs ?? 0) + (now - s.questionStartedAt);
-  const modeLabel = s.config.kind === 'review' ? 'Spaced review' : s.config.difficultyMode === 'adaptive' ? `Adaptive · ${q ? DIFFICULTY_LABEL[q.difficulty] : ''}` : s.config.difficultyMode === 'mixed' ? 'Mixed difficulty' : DIFFICULTY_LABEL[s.config.difficultyMode];
+  const modeLabel = s.config.kind === 'review' ? 'Spaced review' : s.config.difficultyMode === 'adaptive' ? `Adaptive · ${q ? DIFFICULTY_LABEL[q.difficulty] : ''}` : s.config.difficultyMode === 'mixed' ? 'Mixed difficulty' : modeName(s.config.difficultyMode);
 
   return (
     <div>

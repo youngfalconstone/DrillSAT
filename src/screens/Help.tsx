@@ -19,7 +19,7 @@ export default function Help() {
       <div className="card">
         <h2>How it works</h2>
         <p><strong>Question bank.</strong> All 3,770 official College Board SAT questions (1,925 Math, 1,845 Reading &amp; Writing) are stored locally with their answer keys and explanations, so browsing and practice work completely offline.</p>
-        <p><strong>Practice.</strong> Choose a section, topics and difficulty. In adaptive mode the difficulty of each topic moves up after a run of correct answers and down after misses. Check each answer to see the official explanation; ask the AI tutor for hints or a step-by-step solution.</p>
+        <p><strong>Practice.</strong> Choose a section, topics and difficulty. In adaptive mode questions come from the College Board score band you answer correctly about 60% of the time at your estimated score, updated after every answer; Hardest only uses the top score band. Check each answer to see the official explanation; ask the AI tutor for hints or a step-by-step solution.</p>
         <p><strong>Practice tests.</strong> Full-length, timed like the digital SAT: two modules per section, and module 2 gets harder or easier depending on module 1. Answers and explanations appear at the end, with an estimated score.</p>
         <p><strong>Estimated score.</strong> Built from College Board&apos;s score band for each official question you answer (see &ldquo;How is this estimated?&rdquo; on Home). It appears after 20 official questions in a section and is most reliable after a full practice test.</p>
         <p><strong>Spaced review.</strong> Questions you miss come back after 1, 3 and 7 days until you answer them correctly three times. Start a review from Home when questions are due.</p>

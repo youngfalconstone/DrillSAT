@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { normalizeSkill } from '@shared/topics';
 import { api, type AppInfo } from './api';
 import type {
-  AnswerRecord, ChatMessage, Difficulty, ProgressData, Question, QuestionIndexEntry, Section, SectionScore, SessionRecord, Settings,
+  AnswerRecord, ChatMessage, Difficulty, DifficultyMode, ProgressData, Question, QuestionIndexEntry, Section, SectionScore, SessionRecord, Settings,
   TestModuleRecord, TestRecord,
 } from '@shared/types';
 import { DEFAULT_SETTINGS } from '@shared/types';
@@ -10,7 +10,7 @@ import { checkAnswer } from '@shared/answerCheck';
 import { computeLevels, nextDifficulty, updateStreak } from '@shared/adaptive';
 import { filterQuestions, shuffle } from '@shared/search';
 import { applyAnswers } from '@shared/review';
-import { combineTotal, estimateFromAnswers } from '@shared/score';
+import { bandOrder, combineTotal, currentAbility, estimateFromAnswers, targetBand } from '@shared/score';
 import { assembleModule, BREAK_MINUTES, MODULE_SPEC, routeModule2, seededRng } from '@shared/testForm';
 
 export type Screen = 'home' | 'bank' | 'practice' | 'tests' | 'performance' | 'study' | 'settings' | 'help';
@@ -18,7 +18,7 @@ export type Screen = 'home' | 'bank' | 'practice' | 'tests' | 'performance' | 's
 export interface SessionConfig {
   section: Section;
   skills: string[]; // empty = all skills of the section
-  difficultyMode: Difficulty | 'adaptive' | 'mixed';
+  difficultyMode: DifficultyMode;
   count: number;
   includeAI: boolean;
   onlyUnseen: boolean;
@@ -276,7 +276,8 @@ export const useStore = create<State>((set, get) => ({
   async startSession(cfg, presetIds) {
     const { progress } = get();
     const levels = { ...progress.levels };
-    const ids = presetIds ? presetIds.slice(0, cfg.count) : [pickQuestion(get(), cfg, levels, [])].filter(Boolean) as string[];
+    const ability = cfg.difficultyMode === 'adaptive' ? sectionAbility(get(), cfg.section, []) : undefined;
+    const ids = presetIds ? presetIds.slice(0, cfg.count) : [pickQuestion(get(), cfg, levels, [], ability)].filter(Boolean) as string[];
     if (!presetIds && cfg.difficultyMode !== 'adaptive') {
       // non-adaptive: pre-pick the whole session
       while (ids.length < cfg.count) {
@@ -346,7 +347,9 @@ export const useStore = create<State>((set, get) => ({
       return;
     }
     if (s.questionIds.length >= s.config.count) return;
-    const next = pickQuestion(get(), s.config, s.levels, s.questionIds);
+    // adaptive: the ability estimate includes this session's answers, so difficulty moves after every answer
+    const ability = s.config.difficultyMode === 'adaptive' ? sectionAbility(get(), s.config.section, sessionAnswerRecords(s, get())) : undefined;
+    const next = pickQuestion(get(), s.config, s.levels, s.questionIds, ability);
     if (!next) {
       get().showToast('No more questions match this selection.', 'info');
       return;
@@ -652,12 +655,33 @@ export function sessionAnswerRecords(s: ActiveSession, st: Pick<State, 'index' |
   return out;
 }
 
-/** Pick the next question id for a session, honoring skills, difficulty mode, adaptive levels and "unseen". */
+/** Ability in a section from all saved answers plus `extra` (the running session), for adaptive picking. */
+function sectionAbility(st: Pick<State, 'index' | 'progress'>, section: Section, extra: AnswerRecord[]): number {
+  const byId = new Map(st.index.map((e) => [e.id, e]));
+  const bandOf = (id: string) => {
+    const e = byId.get(id);
+    return e?.band ? { band: e.band, type: e.type } : undefined;
+  };
+  return currentAbility(section, [...st.progress.sessions.flatMap((x) => x.answers), ...extra], bandOf);
+}
+
+/** Score band of a question; AI questions (no band) sit in the lower band of their difficulty. */
+function bandOfEntry(e: QuestionIndexEntry): number {
+  return e.band ?? { E: 2, M: 4, H: 6 }[e.difficulty];
+}
+
+/**
+ * Pick the next question id for a session, honoring skills, difficulty mode and "unseen".
+ * Adaptive: the score band whose questions this student answers right ~60% of the time at their current ability
+ * (nearest bands next), across all chosen topics; a topic with a manual level in Performance keeps that level.
+ * Hardest: College Board's top score band (7), then band 6.
+ */
 export function pickQuestion(
   st: Pick<State, 'index' | 'aiQuestions' | 'progress'>,
   cfg: SessionConfig,
   levels: Record<string, Difficulty>,
   used: string[],
+  ability?: number,
 ): string | null {
   const all = cfg.includeAI ? [...st.index, ...st.aiQuestions.map(entryOf)] : st.index;
   const seen = new Set<string>(cfg.onlyUnseen ? st.progress.sessions.flatMap((s) => s.questionIds) : []);
@@ -665,8 +689,25 @@ export function pickQuestion(
   const skills = cfg.skills.length ? cfg.skills : [...new Set(all.filter((e) => e.section === cfg.section).map((e) => e.skill))];
   // round-robin through skills by how many are already used
   const order = shuffle(skills, used.length * 7919 + 17);
+  const bands = cfg.difficultyMode === 'hardest' ? [7, 6]
+    : cfg.difficultyMode === 'adaptive' && ability !== undefined ? bandOrder(targetBand(cfg.section, ability)).slice(0, 3)
+    : null;
+  if (bands) {
+    for (const unseenOnly of [true, false]) {
+      if (!unseenOnly && cfg.onlyUnseen) break;
+      for (const b of bands) {
+        for (const skill of order) {
+          const manual = cfg.difficultyMode === 'adaptive' ? (levels['manual:' + skill] as Difficulty | undefined) : undefined;
+          const pool = filterQuestions(all, { section: cfg.section, skills: [skill], excludeIds: usedSet })
+            .filter((e) => (manual ? e.difficulty === manual : bandOfEntry(e) === b) && (!unseenOnly || !seen.has(e.id)));
+          if (pool.length) return shuffle(pool, Date.now() + used.length)[0].id;
+        }
+      }
+    }
+    if (cfg.difficultyMode === 'hardest') return null;
+  }
   for (const skill of order) {
-    const diff: Difficulty | undefined = cfg.difficultyMode === 'adaptive' ? (levels[skill] ?? 'M') : cfg.difficultyMode === 'mixed' ? undefined : cfg.difficultyMode;
+    const diff: Difficulty | undefined = cfg.difficultyMode === 'adaptive' ? (levels['manual:' + skill] as Difficulty | undefined ?? levels[skill] ?? 'M') : cfg.difficultyMode === 'mixed' || cfg.difficultyMode === 'hardest' ? undefined : cfg.difficultyMode;
     const tryDiffs: (Difficulty | undefined)[] = diff ? [diff, undefined] : [undefined];
     for (const d of tryDiffs) {
       let pool = filterQuestions(all, { section: cfg.section, skills: [skill], difficulties: d ? [d] : undefined, excludeIds: usedSet });

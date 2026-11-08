@@ -171,3 +171,9 @@ Every significant choice made while building the app, with the reason.
 40. **Scroll test settling**: scroll.spec waits for smooth scrolling to go idle before setting positions; a
     compositor smooth scroll still running under full-suite load could override the programmatic position
     (~1 in 5 full runs). Disabling scroll anchoring did not change this and was reverted.
+41. **Adaptive by section ability, not per-topic levels (1.6.1)**: per-topic levels needed 4+ answers in one topic
+    to move, which a mixed session never provides, so adaptive sessions were always Medium (verified in the app:
+    10/10 correct, 10 Medium questions). Adaptive now targets the band with p(correct) closest to 0.6 at the
+    current ability (score model posterior mean over first attempts, no minimum; prior mean = Medium), trying the
+    nearest bands across all chosen topics before relaxing. tests/e2e/adaptive.spec.ts asserts the climb and fall.
+

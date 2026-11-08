@@ -76,7 +76,7 @@ export interface SessionRecord {
   endedAt?: number;
   section: Section;
   skills: string[];
-  difficultyMode: Difficulty | 'adaptive' | 'mixed';
+  difficultyMode: DifficultyMode;
   questionIds: string[];
   answers: AnswerRecord[];
   review?: AIReview;
@@ -169,6 +169,13 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 export const DIFFICULTY_LABEL: Record<Difficulty, string> = { E: 'Easy', M: 'Medium', H: 'Hard' };
+
+/** How a practice session picks difficulty. 'hardest' = College Board's top score band (band 7). */
+export type DifficultyMode = Difficulty | 'adaptive' | 'mixed' | 'hardest';
+
+export function modeLabel(m: DifficultyMode): string {
+  return m === 'adaptive' ? 'Adaptive' : m === 'mixed' ? 'Mixed' : m === 'hardest' ? 'Hardest' : DIFFICULTY_LABEL[m];
+}
 export const SECTION_LABEL: Record<Section, string> = { math: 'Math', rw: 'Reading and Writing' };
 
 export const DOMAINS: Record<Section, string[]> = {

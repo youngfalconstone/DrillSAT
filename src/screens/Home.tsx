@@ -1,6 +1,6 @@
 import { useStore } from '../store';
 import { liveStreak, skillStats } from '@shared/adaptive';
-import { DIFFICULTY_LABEL } from '@shared/types';
+import { modeLabel } from '@shared/types';
 import { topicLabel } from '@shared/topics';
 import { FlameIcon } from '../components/icons';
 import { ScoreCard } from '../components/ScoreCard';
@@ -74,7 +74,7 @@ export default function Home() {
           <h2>Last session</h2>
           {!last ? <div className="muted">No sessions yet.</div> : (
             <div>
-              <div>{new Date(last.startedAt).toLocaleString()} · {last.section === 'math' ? 'Math' : 'Reading and Writing'} · {last.difficultyMode === 'adaptive' ? 'Adaptive' : last.difficultyMode === 'mixed' ? 'Mixed' : DIFFICULTY_LABEL[last.difficultyMode]}</div>
+              <div>{new Date(last.startedAt).toLocaleString()} · {last.section === 'math' ? 'Math' : 'Reading and Writing'} · {modeLabel(last.difficultyMode)}</div>
               <div className="mt"><span className="pill green">{last.answers.filter((a) => a.correct).length} / {last.answers.length} correct</span></div>
               {last.review && <p className="muted small">{last.review.summary}</p>}
               <button className="btn sm mt" onClick={() => nav('performance')}>View performance</button>
