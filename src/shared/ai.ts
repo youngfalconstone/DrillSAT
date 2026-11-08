@@ -191,17 +191,78 @@ export async function generateQuestion(
 
 // ---------- solver ----------
 
+export interface SolutionStep {
+  text: string;
+  /** optional display-math LaTeX for the step (no $ delimiters) */
+  math?: string;
+}
+export interface Solution {
+  keyConcept: string;
+  steps: SolutionStep[];
+  answer: { label: string; reason: string };
+  trap?: string;
+}
+
 export function buildSolvePrompt(q: Question): CompletionRequest {
   const answer = q.type === 'mcq' ? `Correct option: ${q.correct?.[0]}` : `Accepted answers: ${(q.keys ?? []).join(' or ')}`;
-  const system = `You are an expert SAT tutor. Give a clear, step-by-step solution a student can follow. Use numbered steps, state the key concept, and end with the final answer on its own line as "Answer: ...". Write math with LaTeX in $...$ delimiters. Keep it under 300 words.`;
+  const system = `You are an expert SAT tutor writing a concise, scannable solution for a student. No greetings, no filler, no praise. Inline math uses LaTeX inside $...$; the optional "math" field of a step holds one display equation in LaTeX WITHOUT delimiters. Reply with ONLY a JSON object of this exact shape:
+{"keyConcept": "<the single idea the question tests, 1-2 short sentences>",
+ "steps": [{"text": "<one short sentence>", "math": "<optional LaTeX equation>"}, ...],  // 2-6 steps
+ "answer": {"label": "<the correct choice letter, or the numeric answer>", "reason": "<one line>"},
+ "trap": "<optional: why the most tempting wrong choice is wrong, one sentence, or omit>"}`;
   const user = `${SECTION_LABEL[q.section]} - ${q.domain} - ${q.skill} (${DIFFICULTY_LABEL[q.difficulty]})
 
 ${questionToText(q)}
 
 ${answer}
 
-Explain step by step how to arrive at this answer.`;
-  return { system, messages: [{ role: 'user', content: user }], maxTokens: 2500 };
+Produce the JSON solution.`;
+  return { system, messages: [{ role: 'user', content: user }], maxTokens: 2000 };
+}
+
+/** Validate a solver reply. Returns null when the JSON is missing or malformed (caller falls back to text). */
+export function parseSolution(text: string): Solution | null {
+  let raw: unknown;
+  try {
+    raw = extractJson(text);
+  } catch {
+    return null;
+  }
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+  const keyConcept = str(o.keyConcept);
+  const stepsRaw = Array.isArray(o.steps) ? o.steps : [];
+  const steps: SolutionStep[] = stepsRaw
+    .map((s) => (typeof s === 'string' ? { text: s.trim() } : s && typeof s === 'object' ? { text: str((s as Record<string, unknown>).text), math: str((s as Record<string, unknown>).math) || undefined } : { text: '' }))
+    .filter((s) => s.text)
+    .slice(0, 8);
+  const ans = (o.answer && typeof o.answer === 'object' ? o.answer : {}) as Record<string, unknown>;
+  const answer = { label: str(ans.label) || str(o.answer), reason: str(ans.reason) };
+  if (!keyConcept || steps.length < 1 || !answer.label) return null;
+  const trap = str(o.trap) || undefined;
+  return { keyConcept, steps, answer, trap };
+}
+
+/** Small markdown subset -> HTML (bold, italic, headings, lists, paragraphs); keeps $…$ for KaTeX. */
+export function mdToHtml(md: string): string {
+  const esc = escapeHtml(md.replace(/\r\n/g, '\n').trim());
+  const inline = (s: string) =>
+    s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*\w$])\*(?!\s)([^*$]+?)\*(?!\w)/g, '$1<em>$2</em>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  const blocks = esc.split(/\n{2,}/);
+  const out: string[] = [];
+  for (const b of blocks) {
+    const lines = b.split('\n');
+    if (lines.every((l) => /^\s*(\d+[.)]|[-*•])\s+/.test(l))) {
+      const ordered = /^\s*\d+[.)]/.test(lines[0]);
+      out.push(`<${ordered ? 'ol' : 'ul'}>${lines.map((l) => `<li>${inline(l.replace(/^\s*(\d+[.)]|[-*•])\s+/, ''))}</li>`).join('')}</${ordered ? 'ol' : 'ul'}>`);
+    } else if (/^#{1,6}\s/.test(lines[0]) && lines.length === 1) {
+      out.push(`<h4>${inline(lines[0].replace(/^#{1,6}\s+/, ''))}</h4>`);
+    } else {
+      out.push(`<p>${lines.map(inline).join('<br>')}</p>`);
+    }
+  }
+  return out.join('');
 }
 
 // ---------- chatbot ----------

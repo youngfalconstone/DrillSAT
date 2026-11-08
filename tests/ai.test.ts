@@ -119,3 +119,30 @@ describe('session review', () => {
     expect(r.nextSession.section).toBe('rw');
   });
 });
+
+describe('solver output', () => {
+  it('parses a structured solution', async () => {
+    const { parseSolution, buildSolvePrompt } = await import('@shared/ai');
+    const s = parseSolution('```json\n{"keyConcept":"Set f(n) equal to 56.","steps":[{"text":"Set up $7n^3=56$.","math":"7n^3 = 56"},{"text":"Divide by 7."}],"answer":{"label":"A","reason":"n = 2"},"trap":"8 is $n^3$, not $n$."}\n```');
+    expect(s?.steps.length).toBe(2);
+    expect(s?.steps[0].math).toBe('7n^3 = 56');
+    expect(s?.answer.label).toBe('A');
+    expect(s?.trap).toContain('not');
+    expect(buildSolvePrompt(example).system).toContain('JSON');
+  });
+  it('returns null for malformed output so the UI can fall back', async () => {
+    const { parseSolution } = await import('@shared/ai');
+    expect(parseSolution('Great question! First, ...')).toBeNull();
+    expect(parseSolution('{"keyConcept":"x"}')).toBeNull();
+    expect(parseSolution('{"keyConcept":"x","steps":[],"answer":{"label":"B"}}')).toBeNull();
+  });
+  it('renders the markdown subset without leaking asterisks', async () => {
+    const { mdToHtml } = await import('@shared/ai');
+    const html = mdToHtml('**Key concept:** use $a^2$.\n\n1. **Step one.** Do $x$.\n2. Step two.\n\n- a\n- b');
+    expect(html).toContain('<strong>Key concept:</strong>');
+    expect(html).toContain('<ol><li><strong>Step one.</strong> Do $x$.</li><li>Step two.</li></ol>');
+    expect(html).toContain('<ul><li>a</li><li>b</li></ul>');
+    expect(html).not.toContain('**');
+    expect(mdToHtml('<script>')).toBe('<p>&lt;script&gt;</p>');
+  });
+});
