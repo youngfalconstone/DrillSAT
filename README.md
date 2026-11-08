@@ -29,7 +29,8 @@ Everything except the AI features and the calculator works offline.
 
 1. Grab a build from the [download page](https://youngfalconstone.github.io/DrillSAT/) or the [latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest):
    - `DrillSAT-1.1.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
-     no admin rights needed, adds a Start Menu and desktop shortcut.
+     no admin rights needed, adds a Start Menu shortcut (and a desktop shortcut when you run the
+     installer interactively; the silent `/S` install skips it).
    - `DrillSAT-1.1.0-portable.exe` — single portable executable, nothing to install.
    The binaries are not code-signed, so SmartScreen shows "Windows protected your PC" on first launch:
    click *More info* → *Run anyway*.

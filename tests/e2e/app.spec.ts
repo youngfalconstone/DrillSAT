@@ -33,8 +33,10 @@ test.afterAll(async () => {
   fs.rmSync(userData, { recursive: true, force: true });
 });
 
-test('home loads with the full bank', async () => {
+test('home loads with the full bank and shows the package version', async () => {
   await expect(page.locator('.home-hero')).toContainText('3,770 official questions');
+  const version = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'package.json'), 'utf-8')).version;
+  await expect(page.locator('.sidebar .foot')).toContainText(`DrillSAT v${version}`);
   await page.screenshot({ path: path.join(shots, '01-home.png') });
 });
 
