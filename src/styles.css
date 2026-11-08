@@ -65,8 +65,11 @@ h1, h2, h3 { margin: 0; }
 ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 8px; }
 
 /* ---------- shell ---------- */
-.shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; height: 100%; }
-.sidebar { background: var(--navy); color: #e5e7eb; display: flex; flex-direction: column; }
+/* The shell is exactly the viewport; the only scroll container is `.page` (and panels that opt in).
+   grid-template-rows: minmax(0, 1fr) keeps the row from growing to its content, which is what
+   previously pushed the whole app off-screen and left nothing scrollable. */
+.shell { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100%; }
+.sidebar { background: var(--navy); color: #e5e7eb; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 .brand { display: flex; align-items: center; gap: 8px; padding: 22px 18px 18px; font-weight: 700; font-size: 18px; color: #fff; }
 .brand svg { width: 26px; height: 26px; }
 .program { background: var(--blue); color: #fff; font-weight: 700; font-size: 20px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
@@ -82,7 +85,7 @@ h1, h2, h3 { margin: 0; }
 .sidebar .spacer { flex: 1; }
 .sidebar .foot { padding: 12px 18px; font-size: 11px; color: #94a3b8; }
 
-.main { display: flex; flex-direction: column; min-width: 0; height: 100%; }
+.main { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
 .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .header h1 { font-size: 26px; font-weight: 700; }
 .header .sub { color: var(--muted); font-size: 15px; margin-top: 2px; }
@@ -90,7 +93,7 @@ h1, h2, h3 { margin: 0; }
 .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); display: grid; place-items: center; font-weight: 700; color: var(--text-2); }
 
 .content { flex: 1; min-height: 0; display: flex; }
-.page { flex: 1; min-width: 0; overflow: auto; padding: 20px 28px 32px; }
+.page { flex: 1; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 20px 28px 32px; outline: none; }
 
 /* ---------- cards & basics ---------- */
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; }

@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStore, type Screen } from './store';
+import { PageScrollContext } from './pageScroll';
 import ChatPanel from './components/ChatPanel';
 import { BankIcon, ChatIcon, ChevronDown, HelpIcon, HomeIcon, PerfIcon, PracticeIcon, SettingsIcon, ToolsIcon } from './components/icons';
 import logo from './assets/logo.png';
@@ -30,10 +31,19 @@ const TITLES: Record<Screen, [string, string]> = {
 
 export default function App() {
   const { ready, loadError, screen, nav, init, chatOpen, toggleChat, toast, session, settings } = useStore();
+  const pageRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     void init();
   }, [init]);
+
+  // Each screen starts at the top and owns keyboard scrolling (PgUp/PgDn/Space/arrows/Home/End).
+  useEffect(() => {
+    const el = pageRef.current;
+    if (!el) return;
+    el.scrollTo({ top: 0, behavior: 'instant' }); // instant also cancels an in-flight smooth scroll
+    el.focus({ preventScroll: true });
+  }, [screen]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -80,14 +90,16 @@ export default function App() {
           </div>
         </header>
         <div className="content">
-          <main className="page">
-            {screen === 'home' && <Home />}
-            {screen === 'bank' && <QuestionBank />}
-            {screen === 'practice' && <Practice />}
-            {screen === 'performance' && <Performance />}
-            {screen === 'study' && <StudyTools />}
-            {screen === 'settings' && <Settings />}
-            {screen === 'help' && <Help />}
+          <main className="page" ref={pageRef} tabIndex={-1}>
+            <PageScrollContext.Provider value={pageRef}>
+              {screen === 'home' && <Home />}
+              {screen === 'bank' && <QuestionBank />}
+              {screen === 'practice' && <Practice />}
+              {screen === 'performance' && <Performance />}
+              {screen === 'study' && <StudyTools />}
+              {screen === 'settings' && <Settings />}
+              {screen === 'help' && <Help />}
+            </PageScrollContext.Provider>
           </main>
           {chatOpen && <ChatPanel />}
         </div>

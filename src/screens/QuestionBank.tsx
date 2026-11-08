@@ -5,6 +5,7 @@ import type { Difficulty, Question, QuestionIndexEntry, Section } from '@shared/
 import { DIFFICULTY_LABEL, DOMAINS } from '@shared/types';
 import QuestionView from '../components/QuestionView';
 import { ChevronLeft, SearchIcon } from '../components/icons';
+import { useRestoreScroll } from '../pageScroll';
 
 const PAGE = 60;
 
@@ -22,6 +23,7 @@ export default function QuestionBank() {
   const [answer, setAnswer] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  useRestoreScroll(open === null); // list keeps its position across open/back; detail starts at top
 
   const all = useMemo(() => allIndex(), [index, aiQuestions]); // eslint-disable-line react-hooks/exhaustive-deps
   const skillOptions = useMemo(() => {
