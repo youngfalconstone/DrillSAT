@@ -25,7 +25,7 @@ test('practice screenshots', async () => {
   await page.getByRole('button', { name: 'Start session' }).click();
   await page.locator('.choice, .spr input').first().waitFor();
   // the comparison wants a multiple-choice question with an answer selected: skip grid-ins
-  for (let i = 0; i < 6 && (await page.locator('.choice').count()) === 0; i++) {
+  for (let i = 0; i < 9 && (await page.locator('.choice').count()) === 0; i++) {
     await page.getByRole('button', { name: 'Next', exact: true }).click();
     await page.locator('.choice, .spr input').first().waitFor();
   }

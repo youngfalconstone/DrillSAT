@@ -3,6 +3,17 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-11-08
+
+### Changed
+- **Generate questions for several topics or whole domains at once.** Study Tools now uses the same topic
+  list as Practice: tick any mix of topics and domains (nothing ticked = every topic in the section). The
+  questions are spread evenly over the chosen topics in random order, and up to 10 can be generated in one
+  go (was 5).
+- If no draft for a topic passes the SAT format and difficulty checks, that question is skipped and the
+  rest carry on; a note lists the skipped topics. Network and key errors still stop the run.
+- The single-topic dropdown is gone; one topic component is used everywhere.
+
 ## [1.4.0] - 2026-11-08
 
 ### Changed

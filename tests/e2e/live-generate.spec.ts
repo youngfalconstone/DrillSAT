@@ -32,9 +32,10 @@ test('generates SAT-format questions at the requested difficulty', async () => {
     const results: string[] = [];
     for (const c of CASES) {
       await page.getByLabel('Section').selectOption(c.section);
-      const topic = page.getByLabel('Topic');
-      const value = await topic.locator('option', { hasText: c.topic }).first().getAttribute('value');
-      await topic.selectOption(value!);
+      const clear = page.getByRole('button', { name: /^Clear \(/ });
+      if (await clear.count()) await clear.click();
+      await page.getByLabel('How many: ').fill('1');
+      await page.getByLabel(c.topic, { exact: true }).check();
       await page.getByLabel('Difficulty').selectOption(c.difficulty);
       if (c.format) await page.getByLabel('Format').selectOption(c.format);
       const before = await page.locator('.qlist .qitem').count();
@@ -55,6 +56,24 @@ test('generates SAT-format questions at the requested difficulty', async () => {
     console.log(results.join('\n\n---\n\n'));
     // at least most cases must yield an accepted item; a rejection is a quality gate working, not a crash
     expect(results.filter((r) => r.includes('ACCEPTED')).length).toBeGreaterThanOrEqual(3);
+
+    // several topics at once: two questions spread over two topics, one each
+    await page.getByLabel('Section').selectOption('math');
+    const clear = page.getByRole('button', { name: /^Clear \(/ });
+    if (await clear.count()) await clear.click();
+    await page.getByLabel('Difficulty').selectOption('E');
+    await page.getByLabel('Format').selectOption('mcq');
+    await page.getByLabel('Percentages', { exact: true }).check();
+    await page.getByLabel('Circles', { exact: true }).check();
+    await page.getByLabel('How many: ').fill('2');
+    const n0 = JSON.parse(fs.readFileSync(path.join(tmp, 'ai-questions.json'), 'utf-8')).length;
+    await page.getByRole('button', { name: 'Generate', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Generate', exact: true })).toBeEnabled({ timeout: 600000 });
+    const added = JSON.parse(fs.readFileSync(path.join(tmp, 'ai-questions.json'), 'utf-8')).slice(n0);
+    console.log('multi-topic:', added.map((q: { skill: string }) => q.skill), await page.locator('.card .error').allTextContents());
+    for (const q of added) expect(['Percentages', 'Circles']).toContain(q.skill);
+    if (added.length === 2) expect(new Set(added.map((q: { skill: string }) => q.skill)).size).toBe(2);
+    expect(added.length).toBeGreaterThanOrEqual(1);
   } finally {
     await app.close();
     fs.rmSync(tmp, { recursive: true, force: true });

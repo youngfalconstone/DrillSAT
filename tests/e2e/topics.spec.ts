@@ -43,14 +43,18 @@ test('practice topics: short names, domain tick selects its topics, one spelling
   await expect(page.locator('.topic', { hasText: /Cross-text/i })).toHaveCount(1);
 });
 
-test('study tools topic dropdown is grouped by domain with short names', async () => {
+test('study tools takes several topics and whole domains', async () => {
   await page.getByRole('button', { name: 'Study Tools', exact: true }).click();
-  const topic = page.getByLabel('Topic');
-  await expect(topic.locator('optgroup')).toHaveCount(4);
-  await expect(topic.locator('optgroup[label="Algebra"] option').first()).toBeAttached();
-  const labels = await topic.locator('option').allTextContents();
-  expect(labels.every((l) => !l.includes(' — ') && l.length <= 34)).toBe(true);
+  await expect(page.locator('.topic-domain')).toHaveCount(4);
+  await expect(page.getByText('All topics')).toBeVisible();
+  await page.getByLabel('Geometry and Trigonometry').check();
+  await page.getByLabel('Percentages').check();
+  await expect(page.locator('.topic input:checked')).toHaveCount(5);
+  await expect(page.getByRole('button', { name: 'Clear (5)' })).toBeVisible();
+  const labels = await page.locator('.topic span').allTextContents();
+  expect(labels.every((l) => l.length <= 34)).toBe(true);
   await page.screenshot({ path: path.join(shots, '11-study-tools.png') });
+  await page.getByRole('button', { name: 'Clear (5)' }).click();
 });
 
 test('question bank uses the same topic list', async () => {

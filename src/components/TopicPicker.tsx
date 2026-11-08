@@ -46,16 +46,3 @@ function DomainCheck({ label, state, onChange }: { label: string; state: 'none' 
     </label>
   );
 }
-
-/** Single-topic dropdown with the same grouping and short names. */
-export function TopicSelect({ groups, value, onChange }: { groups: TopicGroup[]; value: string; onChange: (skill: string) => void }) {
-  return (
-    <select className="select" value={value} onChange={(e) => onChange(e.target.value)}>
-      {groups.map((g) => (
-        <optgroup key={g.domain} label={g.domain}>
-          {g.skills.map((s) => <option key={s} value={s}>{topicLabel(s)}</option>)}
-        </optgroup>
-      ))}
-    </select>
-  );
-}
