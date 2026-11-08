@@ -58,7 +58,7 @@ export default function App() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand"><img src={logo} alt="" width={30} height={30} style={{ borderRadius: 7 }} /> Drill<span style={{ color: '#5aa9ff' }}>SAT</span></div>
+        <div className="brand"><img src={logo} alt="" width={30} height={30} style={{ borderRadius: 7 }} /><span>Drill<span style={{ color: '#5aa9ff' }}>SAT</span></span></div>
         <div className="program">SAT <ChevronDown style={{ width: 22 }} /></div>
         <nav className="nav">
           {NAV.map((n) => (
