@@ -29,7 +29,7 @@ export default function Performance() {
         <div className="stat"><div className="v" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FlameIcon style={{ width: 26, color: '#f97316' }} />{liveStreak(progress.streak, Date.now())}</div><div className="l">Day streak · best {progress.streak.best}</div></div>
       </div>
 
-      <div className="grid2" style={{ marginTop: 16 }}>
+      <div className="grid2" style={{ marginTop: 32 }}>
         <div className="card">
           <h2>By difficulty</h2>
           <table className="tbl"><thead><tr><th>Level</th><th>Accuracy</th><th>Attempts</th><th>Avg time</th></tr></thead><tbody>
@@ -55,7 +55,7 @@ export default function Performance() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <div className="card" style={{ marginTop: 32 }}>
         <h2>Accuracy by topic &amp; adaptive level</h2>
         <div className="muted small mb">The adaptive level is the difficulty a new adaptive session starts at for that topic. Set it manually to override; choose “Auto” to go back to the computed level.</div>
         <table className="tbl"><thead><tr><th>Skill</th><th>Accuracy</th><th>E / M / H</th><th>Avg time</th><th>Level</th></tr></thead><tbody>

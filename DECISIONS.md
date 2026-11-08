@@ -126,3 +126,14 @@ Every significant choice made while building the app, with the reason.
     full-width under the stem, capped at 96ch) so Reading & Writing answers read in 1-3 lines.
 31. **AI solution is structured JSON** (keyConcept / steps[text, math] / answer / trap) rendered with real
     components; a markdown-subset renderer is the fallback for non-JSON replies so asterisks never show.
+32. **AI question quality gate (1.3.0)**: a generated item is accepted only after the prompt (official
+    skill format + difficulty rubric + official same-skill/difficulty/type examples), deterministic SAT
+    format rules, and an independent reviewer call (solves blind, rates difficulty against official E/M/H
+    anchors of the same skill) all agree. The format rules are calibrated on the official bank and a test
+    asserts that no official item violates them, so the rules never reject something College Board would
+    print. Difficulty must match exactly; adjacent ratings are rejected, because the user asked for items
+    that match College Board difficulty. Cost: two model calls per accepted draft, up to four drafts.
+33. **No fractional page zoom**: rendering at 90 % zoom on high-DPI displays was tried for 1.3.0 and
+    rejected; Chromium's fractional zoom broke programmatic scroll positions and list scroll restoration
+    (deterministic e2e failures). The smaller look comes from the CSS type scale instead, and the window
+    opens at a share of the work area.

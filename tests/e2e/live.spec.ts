@@ -21,6 +21,8 @@ test('desmos loads and the tutor replies with the configured keys', async () => 
   await page.keyboard.press('g');
   await expect(page.locator('.calcpanel')).toBeVisible();
   await expect(page.locator('.calcpanel .dcg-container')).toBeVisible({ timeout: 40000 });
+  // start from an empty calculator: state persists per question in the real profile
+  await page.getByTitle('Clear calculator').click();
   await page.locator('.calcpanel .dcg-mq-editable-field').first().click();
   await page.keyboard.type('y=2x+1');
   await page.waitForTimeout(600);

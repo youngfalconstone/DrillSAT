@@ -79,3 +79,26 @@ describe('question content', () => {
     expect(spr).toBe(464);
   });
 });
+
+describe('SAT format rules for generated items hold for every official item', () => {
+  it('no official item breaks checkSatFormat', async () => {
+    const { checkSatFormat, htmlToText } = await import('@shared/ai');
+    const fails: string[] = [];
+    for (const e of index.questions) {
+      const q: Question = JSON.parse(fs.readFileSync(path.join(BANK, 'q', `${e.id}.json`), 'utf-8'));
+      // official R&W items often keep the passage in the stem; the question is the last paragraph
+      const paras = htmlToText((q.stimulus ?? '') + q.stem).split('\n').map((s) => s.trim()).filter(Boolean);
+      const stem = paras.pop() ?? '';
+      try {
+        checkSatFormat(
+          { stimulus: paras.join('\n'), stem, options: (q.options ?? []).map((o) => htmlToText(o.html)), keys: q.keys },
+          { section: q.section, domain: q.domain, skill: q.skill, difficulty: q.difficulty, type: q.type, examples: [] },
+          { allowFigure: !!(e.hasFigure || e.hasTable) },
+        );
+      } catch (err) {
+        fails.push(`${e.id} ${q.skill}: ${(err as Error).message}`);
+      }
+    }
+    expect(fails.slice(0, 40)).toEqual([]);
+  }, 60000);
+});

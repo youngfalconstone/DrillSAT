@@ -2,7 +2,7 @@
 
 # DrillSAT
 
-**Current version: 1.2.0** · **Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest) · [Changelog](CHANGELOG.md)
+**Current version: 1.3.0** · **Download:** <https://youngfalconstone.github.io/DrillSAT/> · [Latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest) · [Changelog](CHANGELOG.md)
 
 <p align="center"><img src="docs/img/tour.gif" alt="DrillSAT tour: question bank, a math question with the official explanation, a practice session and the AI tutor" width="800"></p>
 
@@ -28,10 +28,10 @@ Everything except the AI features and the calculator works offline.
 ## Quick start (Windows)
 
 1. Grab a build from the [download page](https://youngfalconstone.github.io/DrillSAT/) or the [latest release](https://github.com/youngfalconstone/DrillSAT/releases/latest):
-   - `DrillSAT-1.2.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
+   - `DrillSAT-1.3.0-setup.exe` — installer (NSIS). Installs per-user into `%LOCALAPPDATA%\Programs\DrillSAT`,
      no admin rights needed, adds a Start Menu shortcut (and a desktop shortcut when you run the
      installer interactively; the silent `/S` install skips it).
-   - `DrillSAT-1.2.0-portable.exe` — single portable executable, nothing to install.
+   - `DrillSAT-1.3.0-portable.exe` — single portable executable, nothing to install.
    The binaries are not code-signed, so SmartScreen shows "Windows protected your PC" on first launch:
    click *More info* → *Run anyway*.
    No separate runtime is required; Electron bundles its own Chromium and Node.
@@ -76,7 +76,7 @@ runs best. Use the **portable** exe.
 # Wine 8+ recommended (tested configuration target: wine-9.x, 64-bit prefix)
 export WINEPREFIX=~/.wine-sat   # optional: dedicated prefix
 winecfg                          # once; pick Windows 10
-wine DrillSAT-1.2.0-portable.exe
+wine DrillSAT-1.3.0-portable.exe
 ```
 
 Notes and known workarounds:
@@ -84,7 +84,7 @@ Notes and known workarounds:
 - The app detects Wine (via `WINEPREFIX`/`WINELOADER` or `winemenubuilder.exe` in `system32`) and
   automatically disables GPU acceleration and the Chromium sandbox, which are the two things that
   commonly break Electron under Wine. You can force these flags on any platform:
-  `wine DrillSAT-1.2.0-portable.exe --disable-gpu --no-sandbox`.
+  `wine DrillSAT-1.3.0-portable.exe --disable-gpu --no-sandbox`.
 - If the window opens but stays blank, also try `--disable-gpu-compositing --in-process-gpu`.
 - Secure key storage: under Wine, DPAPI is usually available; if `safeStorage` reports it is not, the
   app stores keys base64-obfuscated and says so in Settings → About ("Secure key storage: Unavailable").
@@ -106,9 +106,14 @@ This build was produced and tested on Windows 11; see `DECISIONS.md` #8 for the 
 - **Adaptive difficulty**: per-topic level from the last six answers (≥80 % → up, ≤40 % → down);
   manual override per topic in Performance; or fixed/mixed difficulty per session.
 - **Topic selection**: include or exclude any skills for a session.
-- **AI question generation** (Study Tools): new questions styled on three bank questions of the same
-  skill/difficulty, validated (one correct answer, explanation, four distinct options, no bank
-  duplicates) and tagged *AI-generated* everywhere.
+- **AI question generation** (Study Tools): new items in the official digital SAT format for the chosen
+  skill, modeled on three official items of the same skill, College Board difficulty and answer format.
+  Each item must pass deterministic SAT format rules (passage length, official question stems and blanks,
+  SAT math scope, grid-in answers that fit the answer grid, no "all of the above"; every rule holds for
+  all 3,770 official items) and an independent AI review that solves it without the key, must reach the
+  same answer, finds exactly one defensible answer, judges it plausible as a real SAT item and rates it
+  at the requested difficulty against official Easy/Medium/Hard items of the same skill. Rejected drafts
+  are rewritten with the reason. Tagged *AI-generated* everywhere.
 - **AI solver**: step-by-step solution for any question on request.
 - **AI review**: after a session — weak topics, mistake patterns, pacing, recommended next session
   (one click to start it).

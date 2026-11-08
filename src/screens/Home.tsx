@@ -32,13 +32,13 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="grid3" style={{ marginTop: 16 }}>
+      <div className="grid3" style={{ marginTop: 32 }}>
         <div className="stat"><div className="v">{answers.length}</div><div className="l">Questions answered</div></div>
         <div className="stat"><div className="v">{answers.length ? Math.round((100 * correct) / answers.length) : 0}%</div><div className="l">Overall accuracy</div></div>
         <div className="stat"><div className="v" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FlameIcon style={{ width: 26, color: streak ? '#f97316' : 'var(--border-2)' }} />{streak}</div><div className="l">Day streak (best {progress.streak.best})</div></div>
       </div>
 
-      <div className="grid2" style={{ marginTop: 16 }}>
+      <div className="grid2" style={{ marginTop: 32 }}>
         <div className="card">
           <h2>Weakest topics</h2>
           {weak.length === 0 ? <div className="muted">Answer a few questions and your weakest topics will show up here.</div> : (

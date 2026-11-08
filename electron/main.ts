@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { encryptionAvailable, getSecret, getSettings, readJson, setSecret, updateSettings, writeJson } from './settings';
@@ -113,9 +113,13 @@ ipcMain.handle('app:openExternal', (_e, url: string) => {
 let win: BrowserWindow | null = null;
 
 function createWindow() {
+  // Open at a comfortable share of the screen instead of a fixed 1280x820, which on a scaled display
+  // (e.g. 150%) overflows the screen and leaves little room for content. (A fractional page zoom was
+  // tried instead and rejected: it breaks scroll restoration in Chromium; see DECISIONS.md #33.)
+  const wa = screen.getPrimaryDisplay().workAreaSize;
   win = new BrowserWindow({
-    width: 1280,
-    height: 820,
+    width: Math.max(960, Math.min(1440, Math.round(wa.width * 0.88))),
+    height: Math.max(640, Math.min(940, Math.round(wa.height * 0.9))),
     minWidth: 960,
     minHeight: 640,
     backgroundColor: '#f3f4f6',

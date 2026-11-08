@@ -3,6 +3,35 @@
 All notable changes to DrillSAT. The format follows [Keep a Changelog](https://keepachangelog.com/) and
 versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-11-08
+
+### Changed
+- **AI-generated questions match the official SAT format and College Board difficulty.** Generation now
+  works in three layers. (1) The prompt carries the official item format and question stem for the
+  chosen skill (e.g. Words in Context blanks, Rhetorical Synthesis notes, Text 1/Text 2 pairs, the
+  Standard English conventions stem), a College Board difficulty rubric, and three official items of
+  the exact skill, difficulty and answer format. (2) Deterministic SAT format rules reject drafts that
+  could not appear on the digital SAT: R&W passage length and blanks, a single question ending in "?",
+  no "all/none of the above", math outside SAT scope (calculus, logarithms, matrices, complex numbers,
+  sequences, combinatorics), references to figures the app cannot show, grid-in answers that do not fit
+  the 5/6-character answer grid. A test runs these rules over all 3,770 official items and none fails.
+  (3) An independent reviewer pass solves the draft without its key and rates it against official Easy,
+  Medium and Hard items of the same skill; the draft is kept only if the answers agree, exactly one
+  answer is defensible, it is plausible as a real SAT item and the rated difficulty equals the requested
+  one. Rejected drafts are rewritten with the reason (up to four tries).
+- Generated passages render notes as bullet lists, pipe-separated data as real tables and Text 1/Text 2
+  headings like the official items.
+- **Lighter, airier interface.** Type is one step smaller throughout (13 px UI, 15 px reading text) with a
+  taller line height; buttons, inputs, answer choices and letter circles are more compact; page gutters,
+  card gaps and section spacing are larger (56 px gutters, 32 px between cards, 48 px above content);
+  content is capped at 1200 px; shadows are flatter.
+- The window opens at a share of the screen (up to 1440 x 940) instead of a fixed 1280 x 820, which
+  overflowed displays running at 150 % scaling.
+
+### Verified
+- All 3,770 official difficulty labels equal the College Board question bank's current values (checked
+  against the live question list on 2026-11-08), and the bank still contains exactly the live set of ids.
+
 ## [1.2.0] - 2026-11-08
 
 ### Changed

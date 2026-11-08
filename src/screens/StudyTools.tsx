@@ -36,11 +36,21 @@ export default function StudyTools() {
     let made = 0;
     try {
       for (let i = 0; i < count; i++) {
-        setProgressText(`Generating ${i + 1} of ${count}…`);
-        const pool = filterQuestions(index, { section, skills: [effSkill], difficulties: [diff], types: section === 'math' ? [type] : ['mcq'] });
-        const exIds = shuffle(pool.length ? pool : filterQuestions(index, { section, skills: [effSkill] }), Date.now() + i).slice(0, 3).map((e) => e.id);
+        setProgressText(`Writing and checking ${i + 1} of ${count}…`);
+        const qType = section === 'math' ? type : 'mcq';
+        // style examples: official items of exactly this skill, difficulty and answer type
+        const pool = filterQuestions(index, { section, skills: [effSkill], difficulties: [diff], types: [qType] });
+        const exIds = shuffle(pool.length ? pool : filterQuestions(index, { section, skills: [effSkill], difficulties: [diff] }), Date.now() + i).slice(0, 3).map((e) => e.id);
         const examples = await Promise.all(exIds.map((id) => getQuestion(id)));
-        const spec: GenerateSpec = { section, domain, skill: effSkill, difficulty: diff, type: section === 'math' ? type : 'mcq', examples };
+        // calibration anchors for the reviewer: one official item of this skill at each difficulty,
+        // distinct from the style examples
+        const anchors: GenerateSpec['anchors'] = {};
+        for (const d of ['E', 'M', 'H'] as Difficulty[]) {
+          const cands = filterQuestions(index, { section, skills: [effSkill], difficulties: [d] }).filter((e) => !exIds.includes(e.id));
+          const pick = shuffle(cands, Date.now() + i + d.charCodeAt(0))[0];
+          if (pick) anchors[d] = await getQuestion(pick.id);
+        }
+        const spec: GenerateSpec = { section, domain, skill: effSkill, difficulty: diff, type: qType, examples, anchors };
         const bank = index.filter((e) => e.skill === effSkill);
         const q = await generateQuestion(spec, [...bank, ...aiQuestions.map((x) => ({ text: x.text ?? '' }))], complete);
         await addAIQuestion(q);
@@ -70,7 +80,7 @@ export default function StudyTools() {
     <div className="grid2">
       <div className="card">
         <h2><SparkIcon style={{ width: 18, verticalAlign: '-3px' }} /> Generate new questions</h2>
-        <p className="muted small">The AI writes an original question in the style of three bank questions with the same topic and difficulty, then the app validates it (one correct answer, explanation present, four distinct options, not a duplicate of the bank). Generated questions are tagged <span className="badge ai">AI</span> everywhere.</p>
+        <p className="muted small">The AI writes an original item modeled on official questions of the same topic, difficulty and format. It is kept only if it follows the digital SAT format, a second AI pass solves it to the same answer, and that pass rates it at the chosen College Board difficulty against official items. Generated questions are tagged <span className="badge ai">AI</span> everywhere.</p>
         {!settings.hasLlmKey && <div className="info">Add an LLM API key in <button className="btn sm" onClick={() => nav('settings')}>Settings</button> to generate questions.</div>}
         <label className="field mt"><span>Section</span><select className="select" value={section} onChange={(e) => { setSection(e.target.value as Section); setSkill(''); }}><option value="math">Math</option><option value="rw">Reading and Writing</option></select></label>
         <label className="field mt"><span>Topic</span><select className="select" value={effSkill} onChange={(e) => setSkill(e.target.value)}>{skills.map(([s, d]) => <option key={s} value={s}>{d} — {s}</option>)}</select></label>
@@ -79,7 +89,7 @@ export default function StudyTools() {
           <label className="field"><span>Format</span><select className="select" value={section === 'math' ? type : 'mcq'} disabled={section !== 'math'} onChange={(e) => setType(e.target.value as 'mcq' | 'spr')}><option value="mcq">Multiple choice</option><option value="spr">Grid-in</option></select></label>
         </div>
         <label className="field mt"><span>How many: {count}</span><input type="range" min={1} max={5} value={count} onChange={(e) => setCount(Number(e.target.value))} /></label>
-        <button className="btn primary block" style={{ marginTop: 16 }} onClick={generate} disabled={busy || !settings.hasLlmKey || !effSkill}>{busy ? <><span className="spinner" /> {progressText}</> : 'Generate'}</button>
+        <button className="btn primary block" style={{ marginTop: 24 }} onClick={generate} disabled={busy || !settings.hasLlmKey || !effSkill}>{busy ? <><span className="spinner" /> {progressText}</> : 'Generate'}</button>
         {err && <div className="error mt">{err}</div>}
       </div>
       <div className="card">

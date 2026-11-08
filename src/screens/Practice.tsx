@@ -70,7 +70,7 @@ function Setup() {
         <div className="mt"><label className="switch"><input type="checkbox" checked={includeAI} onChange={(e) => setIncludeAI(e.target.checked)} /> Include AI-generated questions ({aiQuestions.filter((q) => q.section === section).length})</label></div>
         <div className="mt"><label className="switch"><input type="checkbox" checked={onlyUnseen} onChange={(e) => setOnlyUnseen(e.target.checked)} /> Prefer questions I haven’t seen</label></div>
         <div className="mt muted small">{available.toLocaleString()} questions available · timer {settings.timerEnabled ? 'on' : 'off'} (Settings)</div>
-        <button className="btn primary block" style={{ marginTop: 18 }} onClick={go} disabled={!available}>Start session</button>
+        <button className="btn primary block" style={{ marginTop: 24 }} onClick={go} disabled={!available}>Start session</button>
         {diff === 'adaptive' && (
           <div className="mt muted small">
             Each topic starts at its current level (badge next to the topic, default Medium) and moves up or down from your answers.
@@ -215,7 +215,7 @@ function Summary({ rec }: { rec: SessionRecord }) {
         <div className="stat"><div className="v">{fmt(totalMs / rec.answers.length)}</div><div className="l">Average time per question</div></div>
         <div className="stat"><div className="v">{rec.answers.filter((a) => a.marked).length}</div><div className="l">Marked for review</div></div>
       </div>
-      <div className="grid2" style={{ marginTop: 16 }}>
+      <div className="grid2" style={{ marginTop: 32 }}>
         <div className="card">
           <h2>By topic</h2>
           <table className="tbl"><thead><tr><th>Skill</th><th>Correct</th><th>Avg time</th></tr></thead><tbody>
